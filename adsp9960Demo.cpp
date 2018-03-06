@@ -31,7 +31,7 @@ int red, green, blue, clear = 0;  // variable to store color
 int pin1 = D5;
 
 void setup() {
-    //Serial.begin(115200);
+  Serial.begin(9600);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
   Particle.variable("doRainbow", dorainbow);
@@ -53,9 +53,9 @@ void setup() {
   else Serial.println("Device initialized!");
 
   //enable color sensign mode
-  apds.enableColor(true);
-
+    apds.enableColor(true);
     apds.enableProximity(true);
+    apds.enableGesture(true);
 
   //set the interrupt threshold to fire when proximity reading goes above 175
   apds.setProximityInterruptThreshold(0, 175);
@@ -69,6 +69,12 @@ void setup() {
 }
 
 void loop() {
+
+    uint8_t gesture = apds.readGesture();
+    if(gesture == APDS9960_DOWN) Serial.println("v");
+    if(gesture == APDS9960_UP) Serial.println("^");
+    if(gesture == APDS9960_LEFT) Serial.println("<");
+    if(gesture == APDS9960_RIGHT) Serial.println(">");
 
   if(dorainbow > 0) rainbow(20);
 
