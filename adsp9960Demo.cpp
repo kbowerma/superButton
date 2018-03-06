@@ -21,6 +21,9 @@ void rainbow(uint8_t wait);
 void assignColors();
 int getColor(String command);
 int toogleRainbow(String command);
+void printGesture();
+
+//Global variables
 uint32_t Wheel(byte WheelPos);
 uint16_t dorainbow = 0;
 uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
@@ -29,6 +32,7 @@ uint8_t proximity_data = 0;
 
 int red, green, blue, clear = 0;  // variable to store color
 int pin1 = D5;
+int mode = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -70,24 +74,13 @@ void setup() {
 
 void loop() {
 
-    uint8_t gesture = apds.readGesture();
-    if(gesture == APDS9960_DOWN) Serial.println("v");
-    if(gesture == APDS9960_UP) Serial.println("^");
-    if(gesture == APDS9960_LEFT) Serial.println("<");
-    if(gesture == APDS9960_RIGHT) Serial.println(">");
-
+  if ( mode == 1 ) printGesture;
   if(dorainbow > 0) rainbow(20);
-
   strip.show();
-
-    //get the data and print the different channels
-   // apds.getColorData(&r, &g, &b, &c);
 
   if (millis() % 500 == 0 ) {
       assignColors();
   }
-
-
 }
 
 void rainbow(uint8_t wait) {
@@ -154,6 +147,11 @@ void assignColors() {
 
 
 
-
-  //Serial.println(millis()/1000);
+}
+void printGesture() {
+  uint8_t gesture = apds.readGesture();
+  if(gesture == APDS9960_DOWN) Serial.println("v");
+  if(gesture == APDS9960_UP) Serial.println("^");
+  if(gesture == APDS9960_LEFT) Serial.println("<");
+  if(gesture == APDS9960_RIGHT) Serial.println(">");
 }
