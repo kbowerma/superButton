@@ -4,6 +4,7 @@
  #include "lib/OneWire/OneWire.h"
  #include "lib/Particle-NeoPixel/src/neopixel/neopixel.h"
  #include "Adafruit_APDS9960_Particle.h"
+ #include "lib/clickButton/src/clickButton.h"
  #include "apds9960Demo.h"
 
  /*
@@ -19,6 +20,10 @@ SYSTEM_MODE(AUTOMATIC);
 Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 Adafruit_APDS9960 apds;
 
+//the BUTTON
+//const int buttonPin1 = 4;
+ClickButton button1(BUTTON1, LOW, CLICKBTN_PULLUP);
+
 // Prototypes for local build, ok to leave in for Build IDE
 void rainbow(uint8_t wait);
   void assignColors();
@@ -30,6 +35,9 @@ void rainbow(uint8_t wait);
   uint32_t Wheel(byte WheelPos);
   void lightsOut();
   void setColor();
+  void checkMode(int mode);
+  void checkButton();
+  void dragoHandler(const char *event, const char *data);
 
 //Global variables
 uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
@@ -39,6 +47,11 @@ uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
   int pin1 = D5;
   int mode, mydelay =  0;
   int blinker = D7;
+  String buttonTEXT = "Not Set";
+  String dragoState = "xx";
+
+  // Button results
+  int function = 0;
 
 
 void setup() {
@@ -49,6 +62,9 @@ void setup() {
   Particle.variable("green", green);
   Particle.variable("blue", blue);
   Particle.variable("clear", clear);
+  Particle.variable("mode", mode);
+  Particle.variable("dragoState", dragoState);
+  Particle.variable("buttonTEXT", buttonTEXT);
   Particle.variable("version", MYVERSION);
   Particle.variable("fileName", FILENAME);
   Particle.variable("buildDate", BUILD_DATE);
@@ -57,10 +73,12 @@ void setup() {
   Particle.function("getcolor",getColor);
   Particle.function("setMode",setMode);
   Particle.function("setDelay",setDelay);
+  Particle.subscribe("drago.state", dragoHandler, MY_DEVICES);
 
   pinMode(pin1, INPUT_PULLUP);
   pinMode(blinker, OUTPUT);
-  pinMode(BUTTON1, INPUT_PULLUP); 
+//  pinMode(BUTTON1, INPUT_PULLUP);  I think this is done in the Button Library now
+  //attachInterrupt(BUTTON1, checkButton, FALLING);
   //pinMode(D7, OUTPUT);
   //digitalWrite(D7, LOW);  // turn off blue led
 
@@ -76,29 +94,67 @@ void setup() {
   apds.setProximityInterruptThreshold(0, 175); //set the interrupt threshold to fire when proximity reading goes above 175
   apds.enableProximityInterrupt();  //enable the proximity interrupt
 
+  // Setup button timers (all in milliseconds / ms)
+// (These are default if not set, but changeable for convenience)
+button1.debounceTime   = 20;   // Debounce timer in ms
+button1.multiclickTime = 250;  // Time limit for multi clicks
+button1.longClickTime  = 1000; // time until "held-down clicks" register (was 100)
+
 }
+
+
+
+
 
 void loop() {
 
-  if (mode == 0 && millis() % 500 == 0 ) assignColors();
-  if( mode == 1 ) printGesture();
-  if( mode == 2 ) rainbow(20);
-  if( mode == 3 ) setColor();
-  if( mode == 4 ) lightsOut();
-  if( mode > 4 ) mode = 0;
-  //strip.show();
-  digitalWrite(blinker,!digitalRead(blinker));
-  if( digitalRead(D6)==LOW ) { // button pushed turn on blue led
-    digitalWrite(D7, HIGH);
-    mode++;
-      Particle.publish("setMode",String(mode));
-    delay(250);
-  } else  {
-  digitalWrite(D7, LOW);  // turn off blue led
+  button1.Update();
+  // Save click codes in LEDfunction, as click codes are reset at next Update()
+  if(button1.clicks != 0) function = button1.clicks;
+  if(function == 1) {
+    buttonTEXT = "SINGLE click";
+    Particle.publish("buttonTEXT", "SINGLE click");
+    if (dragoState == "00") {
+      Particle.publish("drago", "10",PRIVATE);
+    } else if (dragoState == "10") {
+      Particle.publish("drago", "11",PRIVATE);
+    } else if (dragoState == "11") {
+      Particle.publish("drago", "01",PRIVATE);
+    } else {
+      Particle.publish("drago", "00",PRIVATE);
+    }
   }
+  if(function == 2) {
+    buttonTEXT = "DOUBLE click";
+    Particle.publish("buttonTEXT", "DOUBLE click");
+    Particle.publish("drago", "11",PRIVATE);
+  }
+  if(function == 3) {
+    buttonTEXT = "TRIPLE click";
+    Particle.publish("buttonTEXT", "TRIPLE click");
+    Particle.publish("drago", "01",PRIVATE);
+  }
+  if(function == -1) {
+    buttonTEXT = "SINGLE LONG click";
+    Particle.publish("buttonTEXT", "SINGLE LONG click");
+    Particle.publish("drago", "00",PRIVATE);
+  }
+  if(function == -2) {
+    buttonTEXT = "DOUBLE LONG click";
+    Particle.publish("buttonTEXT", "DOUBLE LONG click");
+  }
+  if(function == -3) {
+    buttonTEXT = "TRIPLE LONG click";
+    Particle.publish("buttonTEXT", "TRIPLE LONG click");
+  }
+  function = 0;
+  delay(5);
 
 
-  delay(mydelay);
+  //checkMode(mode);
+  digitalWrite(blinker,!digitalRead(blinker));
+  //checkButton();
+  //delay(mydelay);
 
 
 
@@ -223,4 +279,28 @@ void setColor() {
 int setDelay(String command) {
   mydelay = command.toInt();
   return mydelay;
+}
+void checkMode(int mode){
+  if (mode == 0 && millis() % 500 == 0 ) assignColors();
+  if( mode == 1 ) printGesture();
+  if( mode == 2 ) rainbow(20);
+  if( mode == 3 ) setColor();
+  if( mode == 4 ) lightsOut();
+  //if( mode > 4 ) mode = 0;  //TODO should this be here or on the button,
+}
+void checkButton(){
+  if( digitalRead(D6)==LOW ) { // button pushed turn on blue led
+    digitalWrite(D7, HIGH);
+    mode++;
+    if( mode > 4 ) mode = 0;
+      Particle.publish("setMode",String(mode));
+    delay(250);
+  } else  {
+  digitalWrite(D7, LOW);  // turn off blue led
+  }
+
+}
+void dragoHandler(const char *event, const char *data) {
+   dragoState = data;
+
 }
