@@ -1,3 +1,4 @@
 #define FILENAME "adsp9960Demo"
-#define MYVERSION "0.1.0"
-#define BUILD_DATE "3/06/2018"
+#define MYVERSION "0.2.0"
+#define BUILD_DATE "6/28/2018"
+#define BUTTON1 D6

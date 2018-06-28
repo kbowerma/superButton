@@ -6,13 +6,15 @@
  #include "Adafruit_APDS9960_Particle.h"
  #include "apds9960Demo.h"
 
+ /*
+ Button post:  https://community.particle.io/t/photon-wkp-pin-button-library/37166
+ */
+
 SYSTEM_MODE(AUTOMATIC);
 
-// IMPORTANT: Set pixel COUNT, PIN and TYPE for Neopixel
-#define PIXEL_PIN D2
+#define PIXEL_PIN D2 // IMPORTANT: Set pixel COUNT, PIN and TYPE for Neopixel
 #define PIXEL_COUNT 2
 #define PIXEL_TYPE SK6812RGBW
-
 
 Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 Adafruit_APDS9960 apds;
@@ -58,6 +60,9 @@ void setup() {
 
   pinMode(pin1, INPUT_PULLUP);
   pinMode(blinker, OUTPUT);
+  pinMode(BUTTON1, INPUT_PULLUP); 
+  //pinMode(D7, OUTPUT);
+  //digitalWrite(D7, LOW);  // turn off blue led
 
   if(!apds.begin()){
     Serial.println("failed to initialize device! Please check your wiring.");
@@ -80,12 +85,21 @@ void loop() {
   if( mode == 2 ) rainbow(20);
   if( mode == 3 ) setColor();
   if( mode == 4 ) lightsOut();
+  if( mode > 4 ) mode = 0;
   //strip.show();
   digitalWrite(blinker,!digitalRead(blinker));
-  delay(mydelay);
-  for (int i = 0 ; i < 1000; i++) {
-    Serial << " this is a dumb loop" << endl ;
+  if( digitalRead(D6)==LOW ) { // button pushed turn on blue led
+    digitalWrite(D7, HIGH);
+    mode++;
+      Particle.publish("setMode",String(mode));
+    delay(250);
+  } else  {
+  digitalWrite(D7, LOW);  // turn off blue led
   }
+
+
+  delay(mydelay);
+
 
 
 }
@@ -157,10 +171,10 @@ void assignColors() {
 }
 void printGesture() {
   uint8_t gesture = apds.readGesture();
-  if(gesture == APDS9960_DOWN) Serial.println("v");
-  if(gesture == APDS9960_UP) Serial.println("^");
-  if(gesture == APDS9960_LEFT) Serial.println("<");
-  if(gesture == APDS9960_RIGHT) Serial.println(">");
+  if(gesture == APDS9960_DOWN) { Serial.println("v"); Particle.publish("gesture", "Down"); }
+  if(gesture == APDS9960_UP) { Serial.println("^"); Particle.publish("gesture", "UP"); }
+  if(gesture == APDS9960_LEFT) { Serial.println("<"); Particle.publish("gesture", "left"); }
+  if(gesture == APDS9960_RIGHT) { Serial.println(">"); Particle.publish("gesture", "right"); }
 }
 int  setMode(String command ) {
   int c = command.toInt();
@@ -184,10 +198,15 @@ int  setMode(String command ) {
       break;
     case 3:
       setColor();
-      mode = 0;
+      mode = c;
+      break;
+    case 4:
+      lightsOut();
+      mode = c;
+
       break;
     }
-
+    Particle.publish("setMode",String(c));
   return mode;
 }
 void lightsOut() {
