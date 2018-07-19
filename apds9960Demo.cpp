@@ -38,13 +38,14 @@ void rainbow(uint8_t wait);
   void checkMode(int mode);
   void checkButton();
   void dragoHandler(const char *event, const char *data);
+  void setButtonColor(int red, int green, int blue) ;
 
 //Global variables
 uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
   uint16_t dorainbow = 0;
   uint8_t proximity_data = 0;
   int red, green, blue, clear = 0;  // variable to store color
-  int pin1 = D5;
+  int pin1 = D5;  // I think this is the apds coms pin
   int mode, mydelay =  0;
   int blinker = D7;
   String buttonTEXT = "Not Set";
@@ -77,6 +78,10 @@ void setup() {
 
   pinMode(pin1, INPUT_PULLUP);
   pinMode(blinker, OUTPUT);
+  pinMode(BUTTONRED, OUTPUT);
+  pinMode(BUTTONGREEN, OUTPUT);
+  pinMode(BUTTONBLUE, OUTPUT);
+
 //  pinMode(BUTTON1, INPUT_PULLUP);  I think this is done in the Button Library now
   //attachInterrupt(BUTTON1, checkButton, FALLING);
   //pinMode(D7, OUTPUT);
@@ -100,6 +105,14 @@ button1.debounceTime   = 20;   // Debounce timer in ms
 button1.multiclickTime = 250;  // Time limit for multi clicks
 button1.longClickTime  = 1000; // time until "held-down clicks" register (was 100)
 
+//Turnoff buttons
+  // analogWrite(BUTTONRED, 255);
+  // analogWrite(BUTTONGREEN, 255);
+  // analogWrite(BUTTONBLUE, 255);
+
+setButtonColor(0,0,0);
+
+
 }
 
 
@@ -116,12 +129,16 @@ void loop() {
     Particle.publish("buttonTEXT", "SINGLE click");
     if (dragoState == "00") {
       Particle.publish("drago", "10",PRIVATE);
+      setButtonColor(255,0,0);
     } else if (dragoState == "10") {
       Particle.publish("drago", "11",PRIVATE);
+      setButtonColor(0,255,0);
     } else if (dragoState == "11") {
       Particle.publish("drago", "01",PRIVATE);
+      setButtonColor(0,0,255);
     } else {
       Particle.publish("drago", "00",PRIVATE);
+      setButtonColor(0,255,255);
     }
   }
   if(function == 2) {
@@ -138,6 +155,7 @@ void loop() {
     buttonTEXT = "SINGLE LONG click";
     Particle.publish("buttonTEXT", "SINGLE LONG click");
     Particle.publish("drago", "00",PRIVATE);
+    setButtonColor(0,0,0);
   }
   if(function == -2) {
     buttonTEXT = "DOUBLE LONG click";
@@ -302,5 +320,11 @@ void checkButton(){
 }
 void dragoHandler(const char *event, const char *data) {
    dragoState = data;
+
+}
+void setButtonColor(int red, int green, int blue) {
+  analogWrite(BUTTONRED, 255-red);
+  analogWrite(BUTTONBLUE, 255-blue);
+  analogWrite(BUTTONGREEN, 255-green);
 
 }
