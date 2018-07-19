@@ -5,7 +5,7 @@
  #include "lib/Particle-NeoPixel/src/neopixel/neopixel.h"
  #include "Adafruit_APDS9960_Particle.h"
  #include "lib/clickButton/src/clickButton.h"
- #include "apds9960Demo.h"
+ #include "superButton.h"
 
  /*
  Button post:  https://community.particle.io/t/photon-wkp-pin-button-library/37166
