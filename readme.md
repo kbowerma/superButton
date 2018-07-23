@@ -11,12 +11,21 @@ Tx|  | VBAT |
 Rx|  | GND |
 WKP| btn blue | D7 |
 DAC|  | D6 | SW2
+<<<<<<< HEAD
 A5| btn green  | D5 |
 A4| btn red  | D4 |
 A3|   | D3 |
 A2|  | D2 |
 A1|   | D1 |
 A0|   | D0 |
+=======
+A5| btn green  | D5 | APDS9960 INT
+A4| btn red  | D4 |
+A3|   | D3 |
+A2|  | D2 | PIXEL_PIN
+A1|   | D1 | APDS9960 SCL
+A0|   | D0 | APDS9960 SDA
+>>>>>>> nord
 ---
 
 ## [AdafruitRugged Metal Pushbutton - 16mm 6V RGB Momentary](https://www.adafruit.com/product/3350) ![](https://cdn-shop.adafruit.com/145x109/3350-01.jpg)
