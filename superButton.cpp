@@ -45,8 +45,8 @@ uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
   uint16_t dorainbow = 0;
   uint8_t proximity_data = 0;
   int red, green, blue, clear = 0;  // variable to store color
-  int pin1 = D5;  // I think this is the apds coms pin
-  int mode, mydelay =  0;
+  int INT_PIN = D5;  // I think this is the apds coms pin
+  int mode, mydelay, distance =  0;
   int blinker = D7;
   String buttonTEXT = "Not Set";
   String dragoState = "xx";
@@ -70,22 +70,23 @@ void setup() {
   Particle.variable("fileName", FILENAME);
   Particle.variable("buildDate", BUILD_DATE);
   Particle.variable("doRainbow", dorainbow);
+  Particle.variable("distance", distance);
   Particle.function("rainbow",toogleRainbow);
   Particle.function("getcolor",getColor);
   Particle.function("setMode",setMode);
   Particle.function("setDelay",setDelay);
   Particle.subscribe("drago.state", dragoHandler, MY_DEVICES);
 
-  pinMode(pin1, INPUT_PULLUP);
+  pinMode(INT_PIN, INPUT_PULLUP);
   pinMode(blinker, OUTPUT);
   pinMode(BUTTONRED, OUTPUT);
   pinMode(BUTTONGREEN, OUTPUT);
   pinMode(BUTTONBLUE, OUTPUT);
 
-//  pinMode(BUTTON1, INPUT_PULLUP);  I think this is done in the Button Library now
-  //attachInterrupt(BUTTON1, checkButton, FALLING);
-  //pinMode(D7, OUTPUT);
-  //digitalWrite(D7, LOW);  // turn off blue led
+  //  pinMode(BUTTON1, INPUT_PULLUP);  I think this is done in the Button Library now
+    //attachInterrupt(BUTTON1, checkButton, FALLING);
+    //pinMode(D7, OUTPUT);
+    //digitalWrite(D7, LOW);  // turn off blue led
 
   if(!apds.begin()){
     Serial.println("failed to initialize device! Please check your wiring.");
@@ -93,33 +94,38 @@ void setup() {
   else Serial.println("Device initialized!");
 
 
-  apds.enableColor(true); //enable color sensign mode
-  apds.enableProximity(true);
-  //apds.enableGesture(true);  //this breaks the Proximity,and color
-  apds.setProximityInterruptThreshold(0, 175); //set the interrupt threshold to fire when proximity reading goes above 175
-  apds.enableProximityInterrupt();  //enable the proximity interrupt
+  // ApDS 9960 Modes Pick 1
 
-  // Setup button timers (all in milliseconds / ms)
-// (These are default if not set, but changeable for convenience)
-button1.debounceTime   = 20;   // Debounce timer in ms
-button1.multiclickTime = 250;  // Time limit for multi clicks
-button1.longClickTime  = 1000; // time until "held-down clicks" register (was 100)
+    //  1. Proximity Mode
+    // apds.enableProximity(true); //enable proximity mode
+    // apds.setProximityInterruptThreshold(0, 175); //set the interrupt threshold to fire when proximity reading goes above 175
+    // apds.enableProximityInterrupt(); //enable the proximity interrupt
 
-//Turnoff buttons
-  // analogWrite(BUTTONRED, 255);
-  // analogWrite(BUTTONGREEN, 255);
-  // analogWrite(BUTTONBLUE, 255);
+  //2.  Gesture mode
+    //gesture mode will be entered once proximity mode senses something close
+    apds.enableProximity(true);
+    apds.enableGesture(true);
+  //3.  Color mode
+      //apds.enableColor(true);
 
-setButtonColor(0,0,0);
+
+    // Setup button timers (all in milliseconds / ms)
+  // (These are default if not set, but changeable for convenience)
+  button1.debounceTime   = 20;   // Debounce timer in ms
+  button1.multiclickTime = 250;  // Time limit for multi clicks
+  button1.longClickTime  = 1000; // time until "held-down clicks" register (was 100)
+
+
+
+  setButtonColor(0,0,0);
 
 
 }
 
 
-
-
-
 void loop() {
+
+  printGesture();
 
   button1.Update();
   // Save click codes in LEDfunction, as click codes are reset at next Update()
@@ -166,13 +172,14 @@ void loop() {
     Particle.publish("buttonTEXT", "TRIPLE LONG click");
   }
   function = 0;
-  delay(5);
-
+  //delay(5);
+  distance =  digitalRead(INT_PIN);
 
   //checkMode(mode);
-  digitalWrite(blinker,!digitalRead(blinker));
+  //digitalWrite(blinker,!digitalRead(blinker));
   //checkButton();
   //delay(mydelay);
+
 
 
 
@@ -236,7 +243,7 @@ void assignColors() {
   Serial.print(apds.readProximity());
   apds.clearInterrupt();  //clear the interrupt
 
-  Serial << " D5 " << digitalRead(pin1) << endl ;
+  Serial << " D5 " << digitalRead(INT_PIN) << endl ;
 
   Serial.println();
 
@@ -244,11 +251,32 @@ void assignColors() {
 
 }
 void printGesture() {
+  digitalWrite(blinker,!digitalRead(blinker));
   uint8_t gesture = apds.readGesture();
-  if(gesture == APDS9960_DOWN) { Serial.println("v"); Particle.publish("gesture", "Down"); }
-  if(gesture == APDS9960_UP) { Serial.println("^"); Particle.publish("gesture", "UP"); }
-  if(gesture == APDS9960_LEFT) { Serial.println("<"); Particle.publish("gesture", "left"); }
-  if(gesture == APDS9960_RIGHT) { Serial.println(">"); Particle.publish("gesture", "right"); }
+    if(gesture == APDS9960_DOWN) {
+      Serial.println("v");
+      Particle.publish("gesture", "Down");
+      Particle.publish("drago", "00",PRIVATE);
+      setButtonColor(255,255,255);
+    }
+    if(gesture == APDS9960_UP) {
+      Serial.println("^");
+      Particle.publish("gesture", "UP");
+      Particle.publish("drago", "11",PRIVATE);
+      setButtonColor(0,0,0);
+    }
+    if(gesture == APDS9960_LEFT) {
+      Serial.println("<");
+      Particle.publish("gesture", "left");
+      Particle.publish("drago", "10",PRIVATE);
+      setButtonColor(56,56,56);
+    }
+    if(gesture == APDS9960_RIGHT) {
+      Serial.println(">");
+      Particle.publish("gesture", "right");
+      Particle.publish("drago", "01",PRIVATE);
+      setButtonColor(128,128,128);
+    }
 }
 int  setMode(String command ) {
   int c = command.toInt();
