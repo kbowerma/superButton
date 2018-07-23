@@ -19,26 +19,8 @@ SYSTEM_MODE(AUTOMATIC);
 
 Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 Adafruit_APDS9960 apds;
-
-//the BUTTON
-//const int buttonPin1 = 4;
 ClickButton button1(BUTTON1, LOW, CLICKBTN_PULLUP);
 
-// Prototypes for local build, ok to leave in for Build IDE
-void rainbow(uint8_t wait);
-  void assignColors();
-  int getColor(String command);
-  int setMode(String command);
-  int toogleRainbow(String command);
-  int setDelay(String command);
-  void printGesture();
-  uint32_t Wheel(byte WheelPos);
-  void lightsOut();
-  void setColor();
-  void checkMode(int mode);
-  void checkButton();
-  void dragoHandler(const char *event, const char *data);
-  void setButtonColor(int red, int green, int blue) ;
 
 //Global variables
 uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
@@ -50,6 +32,7 @@ uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
   int blinker = D7;
   String buttonTEXT = "Not Set";
   String dragoState = "xx";
+  boolean enGesture = true;
 
   // Button results
   int function = 0;
@@ -71,10 +54,12 @@ void setup() {
   Particle.variable("buildDate", BUILD_DATE);
   Particle.variable("doRainbow", dorainbow);
   Particle.variable("distance", distance);
+  Particle.variable("enGesture", enGesture);
   Particle.function("rainbow",toogleRainbow);
   Particle.function("getcolor",getColor);
   Particle.function("setMode",setMode);
   Particle.function("setDelay",setDelay);
+  Particle.function("togGesture",togGesture);
   Particle.subscribe("drago.state", dragoHandler, MY_DEVICES);
 
   pinMode(INT_PIN, INPUT_PULLUP);
@@ -185,6 +170,7 @@ void loop() {
 
 }
 
+//----Functions ---------------
 void rainbow(uint8_t wait) {
   uint16_t i, j;
 
@@ -251,32 +237,34 @@ void assignColors() {
 
 }
 void printGesture() {
-  digitalWrite(blinker,!digitalRead(blinker));
-  uint8_t gesture = apds.readGesture();
-    if(gesture == APDS9960_DOWN) {
-      Serial.println("v");
-      Particle.publish("gesture", "Down");
-      Particle.publish("drago", "00",PRIVATE);
-      setButtonColor(255,255,255);
-    }
-    if(gesture == APDS9960_UP) {
-      Serial.println("^");
-      Particle.publish("gesture", "UP");
-      Particle.publish("drago", "11",PRIVATE);
-      setButtonColor(0,0,0);
-    }
-    if(gesture == APDS9960_LEFT) {
-      Serial.println("<");
-      Particle.publish("gesture", "left");
-      Particle.publish("drago", "10",PRIVATE);
-      setButtonColor(56,56,56);
-    }
-    if(gesture == APDS9960_RIGHT) {
-      Serial.println(">");
-      Particle.publish("gesture", "right");
-      Particle.publish("drago", "01",PRIVATE);
-      setButtonColor(128,128,128);
-    }
+  if(enGesture) {
+    digitalWrite(blinker,!digitalRead(blinker));
+    uint8_t gesture = apds.readGesture();
+      if(gesture == APDS9960_DOWN) {
+        Serial.println("v");
+        Particle.publish("gesture", "Down");
+        Particle.publish("drago", "00",PRIVATE);
+        setButtonColor(255,255,255);
+      }
+      if(gesture == APDS9960_UP) {
+        Serial.println("^");
+        Particle.publish("gesture", "UP");
+        Particle.publish("drago", "11",PRIVATE);
+        setButtonColor(0,0,0);
+      }
+      if(gesture == APDS9960_LEFT) {
+        Serial.println("<");
+        Particle.publish("gesture", "left");
+        Particle.publish("drago", "10",PRIVATE);
+        setButtonColor(56,56,56);
+      }
+      if(gesture == APDS9960_RIGHT) {
+        Serial.println(">");
+        Particle.publish("gesture", "right");
+        Particle.publish("drago", "01",PRIVATE);
+        setButtonColor(128,128,128);
+      }
+  }
 }
 int  setMode(String command ) {
   int c = command.toInt();
@@ -355,4 +343,8 @@ void setButtonColor(int red, int green, int blue) {
   analogWrite(BUTTONBLUE, 255-blue);
   analogWrite(BUTTONGREEN, 255-green);
 
+}
+int togGesture(String command){
+  if( command.toInt() == 1)  { enGesture = true; }
+  if( command.toInt() == 0)  { enGesture = false; }
 }
