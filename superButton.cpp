@@ -27,12 +27,13 @@ uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
   uint16_t dorainbow = 0;
   uint8_t proximity_data = 0;
   int red, green, blue, clear = 0;  // variable to store color
-  int INT_PIN = D5;  // I think this is the apds coms pin
+  // int INT_PIN = D5;  // I think this is the apds coms pin
   int mode, mydelay, distance =  0;
-  int blinker = D7;
+  // int BLINKER = D7;  in header file
   String buttonTEXT = "Not Set";
   String dragoState = "xx";
   boolean enGesture = true;
+  int motionState;
 
   // Button results
   int function = 0;
@@ -63,10 +64,11 @@ void setup() {
   Particle.subscribe("drago.state", dragoHandler, MY_DEVICES);
 
   pinMode(INT_PIN, INPUT_PULLUP);
-  pinMode(blinker, OUTPUT);
+  pinMode(BLINKER, OUTPUT);
   pinMode(BUTTONRED, OUTPUT);
   pinMode(BUTTONGREEN, OUTPUT);
   pinMode(BUTTONBLUE, OUTPUT);
+  pinMode(PIR, INPUT_PULLDOWN);
 
   //  pinMode(BUTTON1, INPUT_PULLUP);  I think this is done in the Button Library now
     //attachInterrupt(BUTTON1, checkButton, FALLING);
@@ -158,12 +160,23 @@ void loop() {
   }
   function = 0;
   //delay(5);
-  distance =  digitalRead(INT_PIN);
+  distance =  digitalRead(INT_PIN);   // THIS DOENSNT WORK
 
-  //checkMode(mode);
-  //digitalWrite(blinker,!digitalRead(blinker));
-  //checkButton();
-  //delay(mydelay);
+  //PIR sensor
+  motionState = digitalRead(PIR);
+  if ( motionState == 0 ) {
+    //strip.setPixelColor(0, red,green,blue,clear );
+    strip.setPixelColor(0, 0,0,0,0 );
+    strip.show();
+  }
+  if ( motionState == 1 ) {
+    //strip.setPixelColor(0, red,green,blue,clear );
+    //strip.setPixelColor(1, 255,0,0,0 );  // green
+    //strip.setPixelColor(1, 0,255,0,0 );  // red
+    //strip.setPixelColor(1, 0,0,255,0 );  // looks like blue and white
+    strip.setPixelColor(0, 10,0,0,0 );
+    strip.show();
+  }
 
 
 
@@ -238,7 +251,7 @@ void assignColors() {
 }
 void printGesture() {
   if(enGesture) {
-    digitalWrite(blinker,!digitalRead(blinker));
+    digitalWrite(BLINKER,!digitalRead(BLINKER));
     uint8_t gesture = apds.readGesture();
       if(gesture == APDS9960_DOWN) {
         Serial.println("v");
