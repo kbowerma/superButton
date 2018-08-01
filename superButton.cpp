@@ -61,7 +61,7 @@ void setup() {
   Particle.function("setMode",setMode);
   Particle.function("setDelay",setDelay);
   Particle.function("togGesture",togGesture);
-  Particle.subscribe("drago.state", dragoHandler, MY_DEVICES);
+  Particle.subscribe("log.drago.state", dragoHandler, MY_DEVICES);
 
   pinMode(INT_PIN, INPUT_PULLUP);
   pinMode(BLINKER, OUTPUT);
