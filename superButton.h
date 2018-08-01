@@ -1,10 +1,13 @@
 #define FILENAME "superButton"
-#define MYVERSION "0.2.3_cleanup"
-#define BUILD_DATE "7/20/2018"
+#define MYVERSION "0.2.5_PIR"
+#define BUILD_DATE "8/1/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4
 #define BUTTONGREEN A5
 #define BUTTONBLUE A7
+#define PIR A0
+#define BLINKER D7
+#define INT_PIN D5
 
 // Prototypes for local build, ok to leave in for Build IDE
 void rainbow(uint8_t wait);
