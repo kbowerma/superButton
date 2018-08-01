@@ -24,7 +24,7 @@ A0| PIR  | D0 | APDS9960 SDA
 
 
 Mark | Func | wire color | conn | RJ45 |RJ45color | Breadboard
------|------|-----
+-----|------|-----|---|---|---|---
 R | red | red | A4  | 2 | orange | E8
 SW1 | switch 1 | grey  | gnd  | 7 | W/brn | E2
 G |green | green | A5 | 6  | grn | E7
@@ -38,8 +38,8 @@ C+ | cathode | orange | +5V | 1 | w/orange | E1
 Pinout L->R
 
 pin | brd |P0 |pos1 | pos2
---|--|--|
-1 | VIN
+--|--|--|--|--
+1 | VIN|||
 2 | 3V  | Vin | D1 | G26
 3 | gnd  | gnd | D2 | G27
 4 | SCL | D1 | G11 | G28
