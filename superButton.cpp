@@ -117,6 +117,7 @@ void loop() {
   button1.Update();
   // Save click codes in LEDfunction, as click codes are reset at next Update()
   if(button1.clicks != 0) function = button1.clicks;
+  
   if(function == 1) {
     buttonTEXT = "SINGLE click";
     Particle.publish("buttonTEXT", "SINGLE click");
@@ -158,6 +159,7 @@ void loop() {
     buttonTEXT = "TRIPLE LONG click";
     Particle.publish("buttonTEXT", "TRIPLE LONG click");
   }
+  
   function = 0;
   //delay(5);
   distance =  digitalRead(INT_PIN);   // THIS DOENSNT WORK
@@ -167,6 +169,7 @@ void loop() {
   if ( motionState == 0 ) {
     //strip.setPixelColor(0, red,green,blue,clear );
     strip.setPixelColor(0, 0,0,0,0 );
+    //strip.setPixelColor(1, 0,0,0,0 );
     strip.show();
   }
   if ( motionState == 1 ) {
@@ -175,6 +178,7 @@ void loop() {
     //strip.setPixelColor(1, 0,255,0,0 );  // red
     //strip.setPixelColor(1, 0,0,255,0 );  // looks like blue and white
     strip.setPixelColor(0, 10,0,0,0 );
+    //strip.setPixelColor(1, 255,255,0,0 );   
     strip.show();
   }
 
