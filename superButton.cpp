@@ -118,39 +118,60 @@ void loop() {
   // Save click codes in LEDfunction, as click codes are reset at next Update()
   if(button1.clicks != 0) function = button1.clicks;
   
-  if(function == 1) {
-    buttonTEXT = "SINGLE click";
-    Particle.publish("buttonTEXT", "SINGLE click");
-    if (dragoState == "00") {
-      Particle.publish("drago", "10",PRIVATE);
-      setButtonColor(255,0,0);
-    } else if (dragoState == "10") {
+
+
+  switch(function){
+    case 1:
+      buttonTEXT = "SINGLE click";
+      Particle.publish("buttonTEXT", "SINGLE click");
+      if (dragoState == "00") {
+        Particle.publish("drago", "10",PRIVATE);
+        setButtonColor(255,0,0);
+      } else if (dragoState == "10") {
+        Particle.publish("drago", "11",PRIVATE);
+        setButtonColor(0,255,0);
+      } else if (dragoState == "11") {
+        Particle.publish("drago", "01",PRIVATE);
+        setButtonColor(0,0,255);
+      } else {
+        Particle.publish("drago", "00",PRIVATE);
+        setButtonColor(0,255,255);
+      }
+      break;
+    case 2:
+      buttonTEXT = "DOUBLE click";
+      Particle.publish("buttonTEXT", "DOUBLE click");
       Particle.publish("drago", "11",PRIVATE);
-      setButtonColor(0,255,0);
-    } else if (dragoState == "11") {
+      break;
+    case 3:
+      buttonTEXT = "TRIPLE click";
+      Particle.publish("buttonTEXT", "TRIPLE click");
       Particle.publish("drago", "01",PRIVATE);
-      setButtonColor(0,0,255);
-    } else {
+      break;
+    case -1:
+      buttonTEXT = "SINGLE LONG click";
+      Particle.publish("buttonTEXT", "SINGLE LONG click");
       Particle.publish("drago", "00",PRIVATE);
-      setButtonColor(0,255,255);
-    }
+      setButtonColor(255,255,255);
+      break;
+    case -2:
+      buttonTEXT = "DOUBLE LONG click";
+      Particle.publish("buttonTEXT", "DOUBLE LONG click");
+      break;
+    case -3:
+      buttonTEXT = "TRIPLE LONG click";
+      Particle.publish("buttonTEXT", "TRIPLE LONG click");
+      break;
   }
-  if(function == 2) {
-    buttonTEXT = "DOUBLE click";
-    Particle.publish("buttonTEXT", "DOUBLE click");
-    Particle.publish("drago", "11",PRIVATE);
-  }
-  if(function == 3) {
-    buttonTEXT = "TRIPLE click";
-    Particle.publish("buttonTEXT", "TRIPLE click");
-    Particle.publish("drago", "01",PRIVATE);
-  }
+
+
+/*
   if(function == -1) {
     buttonTEXT = "SINGLE LONG click";
     Particle.publish("buttonTEXT", "SINGLE LONG click");
     Particle.publish("drago", "00",PRIVATE);
     setButtonColor(0,0,0);
-  }
+  } 
   if(function == -2) {
     buttonTEXT = "DOUBLE LONG click";
     Particle.publish("buttonTEXT", "DOUBLE LONG click");
@@ -159,7 +180,7 @@ void loop() {
     buttonTEXT = "TRIPLE LONG click";
     Particle.publish("buttonTEXT", "TRIPLE LONG click");
   }
-  
+  */
   function = 0;
   //delay(5);
   distance =  digitalRead(INT_PIN);   // THIS DOENSNT WORK

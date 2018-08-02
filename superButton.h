@@ -1,6 +1,6 @@
 #define FILENAME "superButton"
-#define MYVERSION "0.2.5_PIR"
-#define BUILD_DATE "8/1/2018"
+#define MYVERSION "0.3.0_refactor"
+#define BUILD_DATE "8/2/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4
 #define BUTTONGREEN A5
