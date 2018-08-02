@@ -33,7 +33,9 @@ uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
   String buttonTEXT = "Not Set";
   String dragoState = "xx";
   boolean enGesture = true;
-  int motionState;
+  int motionState, oldMotionState;
+  int lastMotionTime, secSinceMotion = 0; 
+   
 
   // Button results
   int function = 0;
@@ -56,6 +58,7 @@ void setup() {
   Particle.variable("doRainbow", dorainbow);
   Particle.variable("distance", distance);
   Particle.variable("enGesture", enGesture);
+  Particle.variable("lastMotion", secSinceMotion);
   Particle.function("rainbow",toogleRainbow);
   Particle.function("getcolor",getColor);
   Particle.function("setMode",setMode);
@@ -117,25 +120,25 @@ void loop() {
   button1.Update();
   // Save click codes in LEDfunction, as click codes are reset at next Update()
   if(button1.clicks != 0) function = button1.clicks;
-  
-
-
   switch(function){
     case 1:
       buttonTEXT = "SINGLE click";
       Particle.publish("buttonTEXT", "SINGLE click");
       if (dragoState == "00") {
+        secSinceMotion = 0;  // just in case
         Particle.publish("drago", "10",PRIVATE);
-        setButtonColor(255,0,0);
+        setButtonColor(9,0,0);
       } else if (dragoState == "10") {
+        secSinceMotion = 0;  // just in case
         Particle.publish("drago", "11",PRIVATE);
-        setButtonColor(0,255,0);
+        setButtonColor(0,9,0);
       } else if (dragoState == "11") {
+        secSinceMotion = 0;  // just in case
         Particle.publish("drago", "01",PRIVATE);
-        setButtonColor(0,0,255);
+        setButtonColor(0,0,9);
       } else {
         Particle.publish("drago", "00",PRIVATE);
-        setButtonColor(0,255,255);
+        setButtonColor(0,9,9);
       }
       break;
     case 2:
@@ -164,47 +167,38 @@ void loop() {
       break;
   }
 
-
-/*
-  if(function == -1) {
-    buttonTEXT = "SINGLE LONG click";
-    Particle.publish("buttonTEXT", "SINGLE LONG click");
-    Particle.publish("drago", "00",PRIVATE);
-    setButtonColor(0,0,0);
-  } 
-  if(function == -2) {
-    buttonTEXT = "DOUBLE LONG click";
-    Particle.publish("buttonTEXT", "DOUBLE LONG click");
-  }
-  if(function == -3) {
-    buttonTEXT = "TRIPLE LONG click";
-    Particle.publish("buttonTEXT", "TRIPLE LONG click");
-  }
-  */
-  function = 0;
+  function = 0;  // reset the click type
   //delay(5);
   distance =  digitalRead(INT_PIN);   // THIS DOENSNT WORK
 
   //PIR sensor
   motionState = digitalRead(PIR);
-  if ( motionState == 0 ) {
-    //strip.setPixelColor(0, red,green,blue,clear );
-    strip.setPixelColor(0, 0,0,0,0 );
-    //strip.setPixelColor(1, 0,0,0,0 );
+  if (motionState != oldMotionState ) {  // this should save some time in the loop and not call a show every time
+    switch (motionState) {
+      case 0:
+        //strip.setPixelColor(0, 0,0,0,0 );
+        strip.clear();
+        break;
+      case 1:
+        strip.setPixelColor(1,10,0,0,0 );
+        strip.setPixelColor(0,10,0,0,0 );
+        lastMotionTime = millis();
+         
+        break;
+    }
     strip.show();
   }
-  if ( motionState == 1 ) {
-    //strip.setPixelColor(0, red,green,blue,clear );
-    //strip.setPixelColor(1, 255,0,0,0 );  // green
-    //strip.setPixelColor(1, 0,255,0,0 );  // red
-    //strip.setPixelColor(1, 0,0,255,0 );  // looks like blue and white
-    strip.setPixelColor(0, 10,0,0,0 );
-    //strip.setPixelColor(1, 255,255,0,0 );   
-    strip.show();
-  }
+
+//check for away
+if ( dragoState != "00" && secSinceMotion > AWAYHOLDOWNTIMER )  {
+        Particle.publish("drago", "00",PRIVATE);
+        setButtonColor(0,0,255);
+        dragoState = "00";
+}
 
 
-
+secSinceMotion = ( millis() - lastMotionTime )/1000;
+oldMotionState = motionState;
 
 }
 
