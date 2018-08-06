@@ -36,10 +36,10 @@ uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
   String dragoState = "xx";
   boolean enGesture = true;
   int motionState, oldMotionState;
-  int lastMotionTime, secSinceMotion = 0; 
-  bool holdDownArmed;
+  int lastMotionTime, secSinceMotion = 0;
+  //bool holdDownArmed;
 
-   
+
 
   // Button results
   int function = 0;
@@ -50,8 +50,8 @@ void setup() {
   //MyConfig myConfig = { false, false, "Test!"}; // instatinate the config object with default values
   //myConfig.version = MYVERSION;
   EEPROM.get(CONFIGADDR,myConfig);
-  holdDownArmed = myConfig.isArmed;
-  
+  //myConfig.isArmed = myConfig.isArmed;
+
   //EEPROM.put(10,myConfig);
 
 
@@ -199,17 +199,17 @@ void loop() {
         break;
       case 1:
         strip.setPixelColor(1,10,0,0,0 );
-        if (holdDownArmed)  strip.setPixelColor(0,10,0,0,0 );
-        if (!holdDownArmed) strip.setPixelColor(0,10,10,0,0 );
+        if (myConfig.isArmed)  strip.setPixelColor(0,10,0,0,0 );
+        if (!myConfig.isArmed) strip.setPixelColor(0,10,10,0,0 );
         lastMotionTime = millis();
-         
+
         break;
     }
     strip.show();
   }
 
 //check for away
-if ( dragoState != "00" && secSinceMotion > AWAYHOLDOWNTIMER && holdDownArmed == true )  {
+if ( dragoState != "00" && secSinceMotion > AWAYHOLDOWNTIMER && myConfig.isArmed == true )  {
         Particle.publish("drago", "00",PRIVATE);
         setButtonColor(255,0,255);  // I wanna turn it yellow.
           // 255,255,0); is red but I have no green
@@ -405,15 +405,15 @@ int togGesture(String command){
   if( command.toInt() == 0)  { enGesture = false; }
 }
 int toggleMotionArmedFunction(String command) {
-  if ( command.toInt() == 1) { 
-    holdDownArmed = true; 
+  if ( command.toInt() == 1) {
+    //holdDownArmed = true;
     myConfig.isArmed = true;
     EEPROM.put(CONFIGADDR,myConfig);
-  } else  if ( command.toInt() == 0) { 
-    holdDownArmed = false; 
+  } else  if ( command.toInt() == 0) {
+    // holdDownArmed = false;
     myConfig.isArmed = false;
     EEPROM.put(CONFIGADDR,myConfig);
   } else return -1;
 
-  return holdDownArmed;
+  return myConfig.isArmed;
 }
