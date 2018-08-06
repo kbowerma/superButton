@@ -21,6 +21,8 @@ Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 Adafruit_APDS9960 apds;
 ClickButton button1(BUTTON1, LOW, CLICKBTN_PULLUP);
 
+MyConfig myConfig = { false, false, "Test!"}; // instatinate the config object with default values
+
 
 //Global variables
 uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
@@ -35,6 +37,8 @@ uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
   boolean enGesture = true;
   int motionState, oldMotionState;
   int lastMotionTime, secSinceMotion = 0; 
+  bool holdDownArmed;
+
    
 
   // Button results
@@ -42,6 +46,15 @@ uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
 
 
 void setup() {
+    // Set the config values
+  //MyConfig myConfig = { false, false, "Test!"}; // instatinate the config object with default values
+  //myConfig.version = MYVERSION;
+  EEPROM.get(CONFIGADDR,myConfig);
+  holdDownArmed = myConfig.isArmed;
+  
+  //EEPROM.put(10,myConfig);
+
+
   Serial.begin(9600);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
@@ -53,17 +66,20 @@ void setup() {
   Particle.variable("dragoState", dragoState);
   Particle.variable("buttonTEXT", buttonTEXT);
   Particle.variable("version", MYVERSION);
+  //Particle.variable("version",String(myConfig.version));  //returns a questiomark in a diamond
   Particle.variable("fileName", FILENAME);
   Particle.variable("buildDate", BUILD_DATE);
   Particle.variable("doRainbow", dorainbow);
   Particle.variable("distance", distance);
   Particle.variable("enGesture", enGesture);
   Particle.variable("lastMotion", secSinceMotion);
+  Particle.variable("isArmed", myConfig.isArmed);
   Particle.function("rainbow",toogleRainbow);
   Particle.function("getcolor",getColor);
   Particle.function("setMode",setMode);
   Particle.function("setDelay",setDelay);
   Particle.function("togGesture",togGesture);
+  Particle.function("togMotArm",toggleMotionArmedFunction);
   Particle.subscribe("log.drago.state", dragoHandler, MY_DEVICES);
 
   pinMode(INT_PIN, INPUT_PULLUP);
@@ -106,8 +122,9 @@ void setup() {
   button1.longClickTime  = 1000; // time until "held-down clicks" register (was 100)
 
 
-
   setButtonColor(0,0,0);
+
+
 
 
 }
@@ -182,7 +199,8 @@ void loop() {
         break;
       case 1:
         strip.setPixelColor(1,10,0,0,0 );
-        strip.setPixelColor(0,10,0,0,0 );
+        if (holdDownArmed)  strip.setPixelColor(0,10,0,0,0 );
+        if (!holdDownArmed) strip.setPixelColor(0,10,10,0,0 );
         lastMotionTime = millis();
          
         break;
@@ -191,7 +209,7 @@ void loop() {
   }
 
 //check for away
-if ( dragoState != "00" && secSinceMotion > AWAYHOLDOWNTIMER )  {
+if ( dragoState != "00" && secSinceMotion > AWAYHOLDOWNTIMER && holdDownArmed == true )  {
         Particle.publish("drago", "00",PRIVATE);
         setButtonColor(255,0,255);  // I wanna turn it yellow.
           // 255,255,0); is red but I have no green
@@ -385,4 +403,17 @@ void setButtonColor(int myred, int mygreen, int myblue) {
 int togGesture(String command){
   if( command.toInt() == 1)  { enGesture = true; }
   if( command.toInt() == 0)  { enGesture = false; }
+}
+int toggleMotionArmedFunction(String command) {
+  if ( command.toInt() == 1) { 
+    holdDownArmed = true; 
+    myConfig.isArmed = true;
+    EEPROM.put(CONFIGADDR,myConfig);
+  } else  if ( command.toInt() == 0) { 
+    holdDownArmed = false; 
+    myConfig.isArmed = false;
+    EEPROM.put(CONFIGADDR,myConfig);
+  } else return -1;
+
+  return holdDownArmed;
 }

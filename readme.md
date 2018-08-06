@@ -1,3 +1,15 @@
+## State model
+
+State name | button color | LLED | RLED
+--------|---------|------|-----
+OFF timeout | yellow
+OFF manual | 
+OFF init | 
+LEFT | 
+RIGHT | 
+BOTH | 
+Unarmed Motion |
+Armed Motion |   | Green | Green
 
 
 ## Photon Pinout

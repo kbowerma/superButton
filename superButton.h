@@ -1,5 +1,5 @@
 #define FILENAME "superButton"
-#define MYVERSION "0.3.1_Holddown"
+#define MYVERSION "___0.3.2_EEPROM"
 #define BUILD_DATE "8/6/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4
@@ -9,6 +9,7 @@
 #define BLINKER D7
 #define INT_PIN D5
 #define AWAYHOLDOWNTIMER 300
+#define CONFIGADDR 10
 
 // Prototypes for local build, ok to leave in for Build IDE
 void rainbow(uint8_t wait);
@@ -18,6 +19,7 @@ void rainbow(uint8_t wait);
   int toogleRainbow(String command);
   int setDelay(String command);
   int togGesture(String command);
+  int toggleMotionArmedFunction(String command);
   void printGesture();
   uint32_t Wheel(byte WheelPos);
   void lightsOut();
@@ -26,3 +28,9 @@ void rainbow(uint8_t wait);
   void checkButton();
   void dragoHandler(const char *event, const char *data);
   void setButtonColor(int red, int green, int blue) ;
+
+  struct MyConfig {
+    bool isArmed;
+    bool enGesture;
+    char version[16];
+  };
