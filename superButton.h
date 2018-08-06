@@ -1,6 +1,6 @@
 #define FILENAME "superButton"
 #define MYVERSION "0.3.1_Holddown"
-#define BUILD_DATE "8/2/2018"
+#define BUILD_DATE "8/6/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4
 #define BUTTONGREEN A5
@@ -8,7 +8,7 @@
 #define PIR A0
 #define BLINKER D7
 #define INT_PIN D5
-#define AWAYHOLDOWNTIMER 60
+#define AWAYHOLDOWNTIMER 300
 
 // Prototypes for local build, ok to leave in for Build IDE
 void rainbow(uint8_t wait);

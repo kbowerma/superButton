@@ -155,7 +155,8 @@ void loop() {
       buttonTEXT = "SINGLE LONG click";
       Particle.publish("buttonTEXT", "SINGLE LONG click");
       Particle.publish("drago", "00",PRIVATE);
-      setButtonColor(255,255,255);
+      //setButtonColor(255,255,0);  // try yellow -- does red
+      setButtonColor(64,128,0);  // haha yellow works.  green has to be 2x red
       break;
     case -2:
       buttonTEXT = "DOUBLE LONG click";
@@ -192,7 +193,9 @@ void loop() {
 //check for away
 if ( dragoState != "00" && secSinceMotion > AWAYHOLDOWNTIMER )  {
         Particle.publish("drago", "00",PRIVATE);
-        setButtonColor(0,0,255);
+        setButtonColor(255,0,255);  // I wanna turn it yellow.
+          // 255,255,0); is red but I have no green
+
         dragoState = "00";
 }
 
@@ -370,7 +373,10 @@ void dragoHandler(const char *event, const char *data) {
    dragoState = data;
 
 }
-void setButtonColor(int red, int green, int blue) {
+void setButtonColor(int myred, int mygreen, int myblue) {
+  red = myred;
+  green = mygreen;
+  blue = myblue;
   analogWrite(BUTTONRED, 255-red);
   analogWrite(BUTTONBLUE, 255-blue);
   analogWrite(BUTTONGREEN, 255-green);
