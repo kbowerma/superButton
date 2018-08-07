@@ -5,6 +5,7 @@
  purpose is to manage my overhad lights and my standing desk,  it is a client to a parcile on a relay board
  Reference
   Button post:  https://community.particle.io/t/photon-wkp-pin-button-library/37166  
+  Sparkfun lib (not used) https://github.com/sparkfun/APDS-9960_RGB_and_Gesture_Sensor/
  */ 
 
 // Includes
@@ -80,9 +81,12 @@ void setup() {
 
   if(!apds.begin()){
     Serial.println("failed to initialize device! Please check your wiring.");
+    Particle.publish("DEBUG","failed to initialize device! Please check your wiring.");
   }
-  else Serial.println("Device initialized!");
-
+  else {
+    Serial.println("Device initialized!");
+    Particle.publish("DEBUG","failed to initialize device! Please check your wiring.");
+  }
 
   // ApDS 9960 Modes Pick 1
 
@@ -95,7 +99,8 @@ void setup() {
       apds.enableProximity(true);
       apds.enableGesture(true);
     //3.  Color mode
-        //apds.enableColor(true);
+     //   apds.enableColor(true);  // lets try both gesture and color;  this only works if I dont fire the gesture
+
 
 
   // Setup button timers (all in milliseconds / ms)
@@ -237,8 +242,19 @@ void loop() {
       }
   }
   int  getColor(String command) {
+      int myreturn;
+      apds.enableProximity(false);
+      apds.enableGesture(false);
+      apds.enableColor(true);
       apds.getColorData(&r, &g, &b, &c);
-      return r;
+      if (command == "r" ) myreturn = r;
+      if (command == "g" ) myreturn = g;
+      if (command == "b" ) myreturn = b;
+      if (command == "c" ) myreturn = c;
+      // Now reenable gesture
+      apds.enableProximity(true);
+      apds.enableGesture(true);
+      return myreturn;
   }
   void assignColors() {
     apds.getColorData(&r, &g, &b, &c);
@@ -309,8 +325,8 @@ void loop() {
         mode = c;
         break;
       case 1:  // gesture
-        apds.enableColor(false);
-        apds.enableGesture(true);
+      apds.enableProximity(true);
+      apds.enableGesture(true);
         lightsOut();
         mode = c;
         break;
