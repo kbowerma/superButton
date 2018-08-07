@@ -16,13 +16,8 @@
  #include "lib/clickButton/src/clickButton.h"
  #include "superButton.h"
 
-// Defines and objects instationion
+// Objects 
   SYSTEM_MODE(AUTOMATIC);
-
-  #define PIXEL_PIN D2 // IMPORTANT: Set pixel COUNT, PIN and TYPE for Neopixel
-  #define PIXEL_COUNT 2
-  #define PIXEL_TYPE SK6812RGBW
-
   Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
   Adafruit_APDS9960 apds;
   ClickButton button1(BUTTON1, LOW, CLICKBTN_PULLUP);
@@ -34,16 +29,12 @@
   uint16_t dorainbow = 0;
   uint8_t proximity_data = 0;
   int red, green, blue, clear = 0;  // variable to store color
-  // int INT_PIN = D5;  // I think this is the apds coms pin
   int mode, mydelay, distance =  0;
-  // int BLINKER = D7;  in header file
   String buttonTEXT = "Not Set";
   String dragoState = "xx";
   boolean enGesture = true;
   int motionState, oldMotionState;
   int lastMotionTime, secSinceMotion = 0;
-  //bool holdDownArmed;
-  // Button results
   int function = 0;
 
 
@@ -64,7 +55,6 @@ void setup() {
   Particle.variable("dragoState", dragoState);
   Particle.variable("buttonTEXT", buttonTEXT);
   Particle.variable("version", MYVERSION);
-  //Particle.variable("version",String(myConfig.version));  //returns a questiomark in a diamond
   Particle.variable("fileName", FILENAME);
   Particle.variable("buildDate", BUILD_DATE);
   Particle.variable("doRainbow", dorainbow);
@@ -87,10 +77,6 @@ void setup() {
   pinMode(BUTTONBLUE, OUTPUT);
   pinMode(PIR, INPUT_PULLDOWN);
 
-  //  pinMode(BUTTON1, INPUT_PULLUP);  I think this is done in the Button Library now
-    //attachInterrupt(BUTTON1, checkButton, FALLING);
-    //pinMode(D7, OUTPUT);
-    //digitalWrite(D7, LOW);  // turn off blue led
 
   if(!apds.begin()){
     Serial.println("failed to initialize device! Please check your wiring.");
@@ -101,19 +87,18 @@ void setup() {
   // ApDS 9960 Modes Pick 1
 
     //  1. Proximity Mode
-    // apds.enableProximity(true); //enable proximity mode
-    // apds.setProximityInterruptThreshold(0, 175); //set the interrupt threshold to fire when proximity reading goes above 175
-    // apds.enableProximityInterrupt(); //enable the proximity interrupt
+      // apds.enableProximity(true); //enable proximity mode
+      // apds.setProximityInterruptThreshold(0, 175); //set the interrupt threshold to fire when proximity reading goes above 175
+      // apds.enableProximityInterrupt(); //enable the proximity interrupt
+    //2.  Gesture mode
+      //gesture mode will be entered once proximity mode senses something close
+      apds.enableProximity(true);
+      apds.enableGesture(true);
+    //3.  Color mode
+        //apds.enableColor(true);
 
-  //2.  Gesture mode
-    //gesture mode will be entered once proximity mode senses something close
-    apds.enableProximity(true);
-    apds.enableGesture(true);
-  //3.  Color mode
-      //apds.enableColor(true);
 
-
-    // Setup button timers (all in milliseconds / ms)
+  // Setup button timers (all in milliseconds / ms)
   // (These are default if not set, but changeable for convenience)
   button1.debounceTime   = 20;   // Debounce timer in ms
   button1.multiclickTime = 250;  // Time limit for multi clicks
@@ -287,33 +272,31 @@ void loop() {
 
   }
   void printGesture() {
-    if(enGesture) {
-      digitalWrite(BLINKER,!digitalRead(BLINKER));
-      uint8_t gesture = apds.readGesture();
-        if(gesture == APDS9960_DOWN) {
-          Serial.println("v");
-          Particle.publish("gesture", "Down");
-          Particle.publish("drago", "00",PRIVATE);
-          setButtonColor(255,255,255);
-        }
-        if(gesture == APDS9960_UP) {
+    switch (apds.readGesture() ) {
+      case APDS9960_DOWN:
+        Serial.println("v");
+        Particle.publish("gesture", "Down");
+        Particle.publish("drago", "00",PRIVATE);
+        setButtonColor(255,255,255);
+        break;
+      case APDS9960_UP:
           Serial.println("^");
           Particle.publish("gesture", "UP");
           Particle.publish("drago", "11",PRIVATE);
           setButtonColor(0,0,0);
-        }
-        if(gesture == APDS9960_LEFT) {
+          break;
+      case APDS9960_LEFT:
           Serial.println("<");
           Particle.publish("gesture", "left");
           Particle.publish("drago", "10",PRIVATE);
           setButtonColor(56,56,56);
-        }
-        if(gesture == APDS9960_RIGHT) {
+          break;
+      case APDS9960_RIGHT:
           Serial.println(">");
           Particle.publish("gesture", "right");
           Particle.publish("drago", "01",PRIVATE);
           setButtonColor(128,128,128);
-        }
+          break;
     }
   }
   int  setMode(String command ) {

@@ -1,5 +1,5 @@
 #define FILENAME "superButton"
-#define MYVERSION "___0.3.2_EEPROM"
+#define MYVERSION "0.3.4"
 #define BUILD_DATE "8/6/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4
@@ -10,6 +10,9 @@
 #define INT_PIN D5
 #define AWAYHOLDOWNTIMER 300
 #define CONFIGADDR 10
+#define PIXEL_PIN D2 // IMPORTANT: Set pixel COUNT, PIN and TYPE for Neopixel
+#define PIXEL_COUNT 2
+#define PIXEL_TYPE SK6812RGBW
 
 // Prototypes for local build, ok to leave in for Build IDE
 void rainbow(uint8_t wait);
