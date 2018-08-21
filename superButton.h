@@ -1,10 +1,18 @@
 #define FILENAME "superButton"
-#define MYVERSION "0.2.3_cleanup"
-#define BUILD_DATE "7/20/2018"
+#define MYVERSION "0.3.5_andcolormode"
+#define BUILD_DATE "8/6/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4
 #define BUTTONGREEN A5
 #define BUTTONBLUE A7
+#define PIR A0
+#define BLINKER D7
+#define INT_PIN D5
+#define AWAYHOLDOWNTIMER 300
+#define CONFIGADDR 10
+#define PIXEL_PIN D2 // IMPORTANT: Set pixel COUNT, PIN and TYPE for Neopixel
+#define PIXEL_COUNT 2
+#define PIXEL_TYPE SK6812RGBW
 
 // Prototypes for local build, ok to leave in for Build IDE
 void rainbow(uint8_t wait);
@@ -14,6 +22,7 @@ void rainbow(uint8_t wait);
   int toogleRainbow(String command);
   int setDelay(String command);
   int togGesture(String command);
+  int toggleMotionArmedFunction(String command);
   void printGesture();
   uint32_t Wheel(byte WheelPos);
   void lightsOut();
@@ -22,3 +31,9 @@ void rainbow(uint8_t wait);
   void checkButton();
   void dragoHandler(const char *event, const char *data);
   void setButtonColor(int red, int green, int blue) ;
+
+  struct MyConfig {
+    bool isArmed;
+    bool enGesture;
+    char version[16];
+  };

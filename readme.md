@@ -1,3 +1,15 @@
+## State model
+
+State name | button color | LLED | RLED
+--------|---------|------|-----
+OFF timeout | yellow
+OFF manual | 
+OFF init | 
+LEFT | 
+RIGHT | 
+BOTH | 
+Unarmed Motion |
+Armed Motion |   | Green | Green
 
 
 ## Photon Pinout
@@ -11,21 +23,12 @@ Tx|  | VBAT |
 Rx|  | GND |
 WKP| btn blue | D7 |
 DAC|  | D6 | SW2
-<<<<<<< HEAD
-A5| btn green  | D5 |
-A4| btn red  | D4 |
-A3|   | D3 |
-A2|  | D2 |
-A1|   | D1 |
-A0|   | D0 |
-=======
 A5| btn green  | D5 | APDS9960 INT
 A4| btn red  | D4 |
 A3|   | D3 |
 A2|  | D2 | PIXEL_PIN
 A1|   | D1 | APDS9960 SCL
-A0|   | D0 | APDS9960 SDA
->>>>>>> nord
+A0| PIR  | D0 | APDS9960 SDA
 ---
 
 ## [AdafruitRugged Metal Pushbutton - 16mm 6V RGB Momentary](https://www.adafruit.com/product/3350) ![](https://cdn-shop.adafruit.com/145x109/3350-01.jpg)
@@ -33,7 +36,7 @@ A0|   | D0 | APDS9960 SDA
 
 
 Mark | Func | wire color | conn | RJ45 |RJ45color | Breadboard
------|------|-----
+-----|------|-----|---|---|---|---
 R | red | red | A4  | 2 | orange | E8
 SW1 | switch 1 | grey  | gnd  | 7 | W/brn | E2
 G |green | green | A5 | 6  | grn | E7
@@ -47,8 +50,8 @@ C+ | cathode | orange | +5V | 1 | w/orange | E1
 Pinout L->R
 
 pin | brd |P0 |pos1 | pos2
---|--|--|
-1 | VIN
+--|--|--|--|--
+1 | VIN|||
 2 | 3V  | Vin | D1 | G26
 3 | gnd  | gnd | D2 | G27
 4 | SCL | D1 | G11 | G28
