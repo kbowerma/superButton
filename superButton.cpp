@@ -20,6 +20,7 @@
 // Objects 
   SYSTEM_MODE(AUTOMATIC);
   Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+  Adafruit_NeoPixel strip2(60, D4, WS2812B);
   Adafruit_APDS9960 apds;
   ClickButton button1(BUTTON1, LOW, CLICKBTN_PULLUP);
   MyConfig myConfig = { false, false, "Test!"}; // instatinate the config object with default values
@@ -48,6 +49,9 @@ void setup() {
   Serial.begin(9600);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
+  strip2.begin();
+  strip2.clear();  // dont know why I get one green.
+  strip2.show(); // Initialize all pixels to 'off'
   Particle.variable("red", red);
   Particle.variable("green", green);
   Particle.variable("blue", blue);
@@ -234,11 +238,15 @@ void loop() {
     }
   }
   int  toogleRainbow(String command) {
-      dorainbow = command.toInt();
-      if (dorainbow == 0 ) {
-          strip.setPixelColor(0, 0,0,0,0 );
-          strip.setPixelColor(1, 0,0,0,0 );
-          return 0;
+      // dorainbow = command.toInt();
+      // if (dorainbow == 0 ) {
+      //     strip.setPixelColor(0, 0,0,0,0 );
+      //     strip.setPixelColor(1, 0,0,0,0 );
+      //     return 0;
+      // }
+      if ( command.toInt() == 1 ) rainbow(10);
+      if ( command.toInt() == 0 ) {
+        strip2.clear();
       }
   }
   int  getColor(String command) {
@@ -342,9 +350,33 @@ void loop() {
       case 4:
         lightsOut();
         mode = c;
+        break;
+      case 5:
+        //turn on bar
+        #define mydelay2 30
+        for (int n=0; n < 60; n++) {
+        //strip2.setPixelColor(n, 255,255,255 );
+        strip2.setColorDimmed(n,255,255,240,28+4*n);
+        delay(mydelay2);
+        strip2.show();
+        }
+        delay(500);
+        for (int n=60; n > 0; n--) {
+          strip2.setColorDimmed(n,255,255,240,0);
+          delay(mydelay2);
+          strip2.show();
+        }
 
+       // strip2.show();
+
+       
+        break;
+      case 6:
+        strip2.clear();
+        strip2.show();
         break;
       }
+       mode = c;
       Particle.publish("setMode",String(c));
     return mode;
   }

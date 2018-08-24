@@ -1,5 +1,5 @@
 #define FILENAME "superButton"
-#define MYVERSION "0.3.5_andcolormode"
+#define MYVERSION "0.4_underlights"
 #define BUILD_DATE "8/6/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4

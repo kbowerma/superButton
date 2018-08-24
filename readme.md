@@ -24,7 +24,7 @@ Rx|  | GND |
 WKP| btn blue | D7 |
 DAC|  | D6 | SW2
 A5| btn green  | D5 | APDS9960 INT
-A4| btn red  | D4 |
+A4| btn red  | D4 | underpin strip
 A3|   | D3 |
 A2|  | D2 | PIXEL_PIN
 A1|   | D1 | APDS9960 SCL
