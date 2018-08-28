@@ -447,6 +447,7 @@ void loop() {
     if ( key == "blue") { blue = value.toInt(); juiceLeds(red,green,blue,white); return 8; }
     if ( key == "white") { white = value.toInt(); juiceLeds(red,green,blue,white); return 9; }
     if ( key == "all") { white = red = green = blue = value.toInt(); juiceLeds(red,green,blue,white); return 9; }
+    if ( key == "reset" ) {System.reset(); return 99;}
      else
     return 0;
   }
