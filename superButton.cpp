@@ -20,21 +20,21 @@
 // Objects 
   SYSTEM_MODE(AUTOMATIC);
   Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
-  Adafruit_NeoPixel strip2(60, D4, WS2812B);
+  Adafruit_NeoPixel strip2(60, D4, SK6812RGBW);
   Adafruit_APDS9960 apds;
   ClickButton button1(BUTTON1, LOW, CLICKBTN_PULLUP);
   MyConfig myConfig = { false, false, "Test!"}; // instatinate the config object with default values
 
 
 //Global variables
-  uint16_t r, g, b, c = 0;  // variable to store colororData(&r, &g, &b, &c);
+  uint16_t r, g, b, w = 0;  // variable to store colororData(&r, &g, &b, &w);
   uint16_t dorainbow = 0;
   uint8_t proximity_data = 0;
-  int red, green, blue, clear = 0;  // variable to store color
+  int red, green, blue, white = 0;  // variable to store color
   int mode, mydelay, distance =  0;
   String buttonTEXT = "Not Set";
   String dragoState = "xx";
-  boolean enGesture = true;
+  //boolean enGesture = true;
   int motionState, oldMotionState;
   int lastMotionTime, secSinceMotion = 0;
   int function = 0;
@@ -55,7 +55,7 @@ void setup() {
   Particle.variable("red", red);
   Particle.variable("green", green);
   Particle.variable("blue", blue);
-  Particle.variable("clear", clear);
+  Particle.variable("white", white);
   Particle.variable("mode", mode);
   Particle.variable("dragoState", dragoState);
   Particle.variable("buttonTEXT", buttonTEXT);
@@ -64,15 +64,15 @@ void setup() {
   Particle.variable("buildDate", BUILD_DATE);
   Particle.variable("doRainbow", dorainbow);
   Particle.variable("distance", distance);
-  Particle.variable("enGesture", enGesture);
+  Particle.variable("gestureArmed", myConfig.gestureArmed);
   Particle.variable("lastMotion", secSinceMotion);
-  Particle.variable("isArmed", myConfig.isArmed);
+  Particle.variable("motionArmed", myConfig.motionArmed);
   Particle.function("rainbow",toogleRainbow);
   Particle.function("getcolor",getColor);
   Particle.function("setMode",setMode);
   Particle.function("setDelay",setDelay);
-  Particle.function("togGesture",togGesture);
-  Particle.function("togMotArm",toggleMotionArmedFunction);
+  //Particle.function("togGesture",togGesture);
+  Particle.function("setConfig", setConfig);
   Particle.subscribe("log.drago.state", dragoHandler, MY_DEVICES);
 
   pinMode(INT_PIN, INPUT_PULLUP);
@@ -123,7 +123,7 @@ void setup() {
 
 void loop() {
 
-  printGesture();
+  doGesture();
 
   button1.Update();
   // Save click codes in LEDfunction, as click codes are reset at next Update()
@@ -190,8 +190,8 @@ void loop() {
         break;
       case 1:
         strip.setPixelColor(1,10,0,0,0 );
-        if (myConfig.isArmed)  strip.setPixelColor(0,10,0,0,0 );
-        if (!myConfig.isArmed) strip.setPixelColor(0,10,10,0,0 );
+        if (myConfig.motionArmed)  strip.setPixelColor(0,10,0,0,0 );
+        if (!myConfig.motionArmed) strip.setPixelColor(0,10,10,0,0 );
         lastMotionTime = millis();
 
         break;
@@ -200,7 +200,7 @@ void loop() {
   }
 
   //check for away
-  if ( dragoState != "00" && secSinceMotion > AWAYHOLDOWNTIMER && myConfig.isArmed == true )  {
+  if ( dragoState != "00" && secSinceMotion > AWAYHOLDOWNTIMER && myConfig.motionArmed == true )  {
           Particle.publish("drago", "00",PRIVATE);
           setButtonColor(255,0,255);  // I wanna turn it yellow.
             // 255,255,0); is red but I have no green
@@ -254,18 +254,18 @@ void loop() {
       apds.enableProximity(false);
       apds.enableGesture(false);
       apds.enableColor(true);
-      apds.getColorData(&r, &g, &b, &c);
+      apds.getColorData(&r, &g, &b, &w);
       if (command == "r" ) myreturn = r;
       if (command == "g" ) myreturn = g;
       if (command == "b" ) myreturn = b;
-      if (command == "c" ) myreturn = c;
+      if (command == "w" ) myreturn = w;
       // Now reenable gesture
       apds.enableProximity(true);
       apds.enableGesture(true);
       return myreturn;
   }
   void assignColors() {
-    apds.getColorData(&r, &g, &b, &c);
+    apds.getColorData(&r, &g, &b, &w);
     Serial.print("red: ");
     red = r;
     Serial.print(r);
@@ -278,9 +278,9 @@ void loop() {
     blue = b;
     Serial.print(b);
 
-    Serial.print(" clear: ");
-    clear =c ;
-    Serial.print(c);
+    Serial.print(" white: ");
+    white =w ;
+    Serial.print(w);
     Serial.print(" ");
 
 
@@ -295,7 +295,7 @@ void loop() {
 
 
   }
-  void printGesture() {
+  void doGesture() {
     switch (apds.readGesture() ) {
       case APDS9960_DOWN:
         Serial.println("v");
@@ -352,25 +352,8 @@ void loop() {
         mode = c;
         break;
       case 5:
-        //turn on bar
-        #define mydelay2 30
-        for (int n=0; n < 60; n++) {
-        //strip2.setPixelColor(n, 255,255,255 );
-        strip2.setColorDimmed(n,255,255,240,28+4*n);
-        delay(mydelay2);
-        strip2.show();
-        }
-        delay(500);
-        for (int n=60; n > 0; n--) {
-          strip2.setColorDimmed(n,255,255,240,0);
-          delay(mydelay2);
-          strip2.show();
-        }
-
-       // strip2.show();
-
-       
-        break;
+       juiceLeds(red, green, blue, white);
+       break;
       case 6:
         strip2.clear();
         strip2.show();
@@ -387,8 +370,8 @@ void loop() {
 
   }
   void setColor() {
-    strip.setPixelColor(0, red,green,blue,clear );
-    strip.setPixelColor(1, red,green,blue,clear );
+    strip.setPixelColor(0, red,green,blue,white );
+    strip.setPixelColor(1, red,green,blue,white );
     strip.show();
   }
   int setDelay(String command) {
@@ -397,7 +380,7 @@ void loop() {
   }
   void checkMode(int mode){
     if (mode == 0 && millis() % 500 == 0 ) assignColors();
-    if( mode == 1 ) printGesture();
+    if( mode == 1 ) doGesture();
     if( mode == 2 ) rainbow(20);
     if( mode == 3 ) setColor();
     if( mode == 4 ) lightsOut();
@@ -428,20 +411,44 @@ void loop() {
     analogWrite(BUTTONGREEN, 255-green);
 
   }
-  int togGesture(String command){
-    if( command.toInt() == 1)  { enGesture = true; }
-    if( command.toInt() == 0)  { enGesture = false; }
-  }
-  int toggleMotionArmedFunction(String command) {
-    if ( command.toInt() == 1) {
-      //holdDownArmed = true;
-      myConfig.isArmed = true;
-      EEPROM.put(CONFIGADDR,myConfig);
-    } else  if ( command.toInt() == 0) {
-      // holdDownArmed = false;
-      myConfig.isArmed = false;
-      EEPROM.put(CONFIGADDR,myConfig);
-    } else return -1;
+  
+  // int togGesture(String command){
+  //   if( command.toInt() == 1)  { myConfig.gestureArmed  = true; }
+  //   if( command.toInt() == 0)  { myConfig.gestureArmed  = false; }
+  // } 
 
-    return myConfig.isArmed;
+
+  int setConfig(String command) {
+    int seperator = command.indexOf("=");
+    String key = command.substring(0,seperator);
+    String value = command.substring(seperator+1);
+    Particle.publish(key, value);
+    /// My setters
+    if ( key == "myConfig.motionArmed") {
+      myConfig.motionArmed = value.toInt(); 
+      EEPROM.put(CONFIGADDR,myConfig); 
+      return 1;
+    }
+    if ( key == "myConfig.gestureArmed") {
+      myConfig.gestureArmed = value.toInt(); 
+      EEPROM.put(CONFIGADDR,myConfig); 
+      return 2;
+    }
+    if ( key == "red") { red = value.toInt(); juiceLeds(red,green,blue,white); return 5; }
+    if ( key == "green") { green = value.toInt(); juiceLeds(red,green,blue,white); return 7; }
+    if ( key == "blue") { blue = value.toInt(); juiceLeds(red,green,blue,white); return 8; }
+    if ( key == "white") { white = value.toInt(); juiceLeds(red,green,blue,white); return 9; }
+    if ( key == "all") { white = red = green = blue = value.toInt(); juiceLeds(red,green,blue,white); return 9; }
+     else
+    return 0;
   }
+  void juiceLeds(int ured, int ugreen,int ublue, int uwhite) {
+        #define mydelay2 20
+        for (int n=0; n < 60; n++) {
+        strip2.setPixelColor(n,ugreen,ured,ublue,uwhite );  // not sure why red and green is swapped
+        delay(mydelay2);
+        strip2.show();
+        }
+
+  }
+
