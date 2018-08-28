@@ -20,7 +20,7 @@
 // Objects 
   SYSTEM_MODE(AUTOMATIC);
   Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
-  Adafruit_NeoPixel strip2(60, D4, SK6812RGBW);
+  Adafruit_NeoPixel strip2(60, NEOSTRIP, SK6812RGBW);
   Adafruit_APDS9960 apds;
   ClickButton button1(BUTTON1, LOW, CLICKBTN_PULLUP);
   MyConfig myConfig = { false, false, "Test!"}; // instatinate the config object with default values
@@ -31,13 +31,14 @@
   uint16_t dorainbow = 0;
   uint8_t proximity_data = 0;
   int red, green, blue, white = 0;  // variable to store color
-  int mode, mydelay, distance =  0;
+  int mode, distance =  0;
   String buttonTEXT = "Not Set";
   String dragoState = "xx";
   //boolean enGesture = true;
   int motionState, oldMotionState;
   int lastMotionTime, secSinceMotion = 0;
   int function = 0;
+  uint32_t ticksperloop, start;
 
 
 void setup() {
@@ -63,15 +64,14 @@ void setup() {
   Particle.variable("fileName", FILENAME);
   Particle.variable("buildDate", BUILD_DATE);
   Particle.variable("doRainbow", dorainbow);
-  Particle.variable("distance", distance);
+  // Particle.variable("distance", distance);
   Particle.variable("gestureArmed", myConfig.gestureArmed);
   Particle.variable("lastMotion", secSinceMotion);
   Particle.variable("motionArmed", myConfig.motionArmed);
+  Particle.variable("ticksperloop", ticksperloop);
   Particle.function("rainbow",toogleRainbow);
   Particle.function("getcolor",getColor);
   Particle.function("setMode",setMode);
-  Particle.function("setDelay",setDelay);
-  //Particle.function("togGesture",togGesture);
   Particle.function("setConfig", setConfig);
   Particle.subscribe("log.drago.state", dragoHandler, MY_DEVICES);
 
@@ -115,16 +115,19 @@ void setup() {
 
 
   setButtonColor(0,0,0);
-
-
+  juiceLeds(0,0,0,0);  // tries to fixe that damn first green light
 
 
 }
 
 void loop() {
+  
+  start = System.ticks();
 
+  if (myConfig.gestureArmed == true ) {
   doGesture();
-
+  } else setButtonColor(32,64,0);  // this yellow
+  
   button1.Update();
   // Save click codes in LEDfunction, as click codes are reset at next Update()
   if(button1.clicks != 0) function = button1.clicks;
@@ -177,15 +180,14 @@ void loop() {
   }
 
   function = 0;  // reset the click type
-  //delay(5);
-  distance =  digitalRead(INT_PIN);   // THIS DOENSNT WORK
+
+  //distance =  digitalRead(INT_PIN);   // THIS DOENSNT WORK
 
   //PIR sensor
   motionState = digitalRead(PIR);
   if (motionState != oldMotionState ) {  // this should save some time in the loop and not call a show every time
     switch (motionState) {
       case 0:
-        //strip.setPixelColor(0, 0,0,0,0 );
         strip.clear();
         break;
       case 1:
@@ -200,17 +202,24 @@ void loop() {
   }
 
   //check for away
-  if ( dragoState != "00" && secSinceMotion > AWAYHOLDOWNTIMER && myConfig.motionArmed == true )  {
+  if ( dragoState != "00" && secSinceMotion > myConfig.awayHoldTMR && myConfig.motionArmed == true )  {
           Particle.publish("drago", "00",PRIVATE);
           setButtonColor(255,0,255);  // I wanna turn it yellow.
+          juiceLeds(0,0,0,0);
             // 255,255,0); is red but I have no green
 
           dragoState = "00";
+  }
+  if ( dragoState == "00" && red + green + blue + white != 0 && secSinceMotion > myConfig.awayHoldTMR && myConfig.motionArmed == true  ) {  // if the big lights are off and the hold down timer is meet.
+    red = green = blue = white = 0;
+    juiceLeds(0,0,0,0);
   }
 
 
   secSinceMotion = ( millis() - lastMotionTime )/1000;
   oldMotionState = motionState;
+ 
+  ticksperloop = System.ticks() - start;
 
 }
 
@@ -248,9 +257,10 @@ void loop() {
       if ( command.toInt() == 0 ) {
         strip2.clear();
       }
+  return 1;    
   }
   int  getColor(String command) {
-      int myreturn;
+      int myreturn = 0;
       apds.enableProximity(false);
       apds.enableGesture(false);
       apds.enableColor(true);
@@ -296,32 +306,33 @@ void loop() {
 
   }
   void doGesture() {
-    switch (apds.readGesture() ) {
-      case APDS9960_DOWN:
-        Serial.println("v");
-        Particle.publish("gesture", "Down");
-        Particle.publish("drago", "00",PRIVATE);
-        setButtonColor(255,255,255);
-        break;
-      case APDS9960_UP:
-          Serial.println("^");
-          Particle.publish("gesture", "UP");
-          Particle.publish("drago", "11",PRIVATE);
-          setButtonColor(0,0,0);
+      switch (apds.readGesture() ) {
+        case APDS9960_DOWN:
+          Serial.println("v");
+          Particle.publish("gesture", "Down");
+          Particle.publish("drago", "00",PRIVATE);
+          setButtonColor(255,255,255);
           break;
-      case APDS9960_LEFT:
-          Serial.println("<");
-          Particle.publish("gesture", "left");
-          Particle.publish("drago", "10",PRIVATE);
-          setButtonColor(56,56,56);
-          break;
-      case APDS9960_RIGHT:
-          Serial.println(">");
-          Particle.publish("gesture", "right");
-          Particle.publish("drago", "01",PRIVATE);
-          setButtonColor(128,128,128);
-          break;
-    }
+        case APDS9960_UP:
+            Serial.println("^");
+            Particle.publish("gesture", "UP");
+            Particle.publish("drago", "11",PRIVATE);
+            setButtonColor(0,0,0);
+            break;
+        case APDS9960_LEFT:
+            Serial.println("<");
+            Particle.publish("gesture", "left");
+            Particle.publish("drago", "10",PRIVATE);
+            setButtonColor(56,0,56);
+            break;
+        case APDS9960_RIGHT:
+            Serial.println(">");
+            Particle.publish("gesture", "right");
+            Particle.publish("drago", "01",PRIVATE);
+            setButtonColor(0,56,56);
+            break;
+      }
+   
   }
   int  setMode(String command ) {
     int c = command.toInt();
@@ -374,10 +385,6 @@ void loop() {
     strip.setPixelColor(1, red,green,blue,white );
     strip.show();
   }
-  int setDelay(String command) {
-    mydelay = command.toInt();
-    return mydelay;
-  }
   void checkMode(int mode){
     if (mode == 0 && millis() % 500 == 0 ) assignColors();
     if( mode == 1 ) doGesture();
@@ -411,13 +418,6 @@ void loop() {
     analogWrite(BUTTONGREEN, 255-green);
 
   }
-  
-  // int togGesture(String command){
-  //   if( command.toInt() == 1)  { myConfig.gestureArmed  = true; }
-  //   if( command.toInt() == 0)  { myConfig.gestureArmed  = false; }
-  // } 
-
-
   int setConfig(String command) {
     int seperator = command.indexOf("=");
     String key = command.substring(0,seperator);
@@ -432,7 +432,15 @@ void loop() {
     if ( key == "myConfig.gestureArmed") {
       myConfig.gestureArmed = value.toInt(); 
       EEPROM.put(CONFIGADDR,myConfig); 
+      if ( value.toInt() == 1 ) { 
+         setButtonColor(0,64,0);
+      } else setButtonColor(32,64,0);
       return 2;
+    }
+    if ( key == "myConfig.awayHoldTMR" ) {
+      myConfig.awayHoldTMR = value.toInt(); 
+      EEPROM.put(CONFIGADDR,myConfig); 
+      return 3;
     }
     if ( key == "red") { red = value.toInt(); juiceLeds(red,green,blue,white); return 5; }
     if ( key == "green") { green = value.toInt(); juiceLeds(red,green,blue,white); return 7; }

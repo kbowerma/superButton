@@ -1,5 +1,5 @@
 #define FILENAME "superButton"
-#define MYVERSION "0.5"
+#define MYVERSION "0.5.1-lightbar-timeout"
 #define BUILD_DATE "8/28/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4
@@ -8,7 +8,7 @@
 #define PIR A0
 #define BLINKER D7
 #define INT_PIN D5
-#define AWAYHOLDOWNTIMER 300
+#define NEOSTRIP D4
 #define CONFIGADDR 10
 #define PIXEL_PIN D2 // IMPORTANT: Set pixel COUNT, PIN and TYPE for Neopixel
 #define PIXEL_COUNT 2
@@ -20,8 +20,6 @@ void rainbow(uint8_t wait);
   int getColor(String command);
   int setMode(String command);
   int toogleRainbow(String command);
-  int setDelay(String command);
-  int togGesture(String command);
   int setConfig(String command);
   void doGesture();
   uint32_t Wheel(byte WheelPos);
@@ -37,4 +35,5 @@ void rainbow(uint8_t wait);
     bool motionArmed;
     bool gestureArmed;
     char version[16];
+    int awayHoldTMR;
   };
