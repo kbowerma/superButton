@@ -1,6 +1,6 @@
 #define FILENAME "superButton"
-#define MYVERSION "0.3.5_andcolormode"
-#define BUILD_DATE "8/6/2018"
+#define MYVERSION "0.5"
+#define BUILD_DATE "8/28/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4
 #define BUTTONGREEN A5
@@ -22,8 +22,8 @@ void rainbow(uint8_t wait);
   int toogleRainbow(String command);
   int setDelay(String command);
   int togGesture(String command);
-  int toggleMotionArmedFunction(String command);
-  void printGesture();
+  int setConfig(String command);
+  void doGesture();
   uint32_t Wheel(byte WheelPos);
   void lightsOut();
   void setColor();
@@ -31,9 +31,10 @@ void rainbow(uint8_t wait);
   void checkButton();
   void dragoHandler(const char *event, const char *data);
   void setButtonColor(int red, int green, int blue) ;
+  void juiceLeds(int ured, int ugreen,int ublue, int uwhite); 
 
   struct MyConfig {
-    bool isArmed;
-    bool enGesture;
+    bool motionArmed;
+    bool gestureArmed;
     char version[16];
   };
