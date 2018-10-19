@@ -1,6 +1,6 @@
 #define FILENAME "superButton"
-#define MYVERSION "0.5.1-lightbar-timeout"
-#define BUILD_DATE "8/28/2018"
+#define MYVERSION "0.5.4_resetssecsincemotion"
+#define BUILD_DATE "10/18/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4
 #define BUTTONGREEN A5

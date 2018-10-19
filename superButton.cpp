@@ -76,7 +76,7 @@ void setup() {
   Particle.subscribe("log.drago.state", dragoHandler, MY_DEVICES);
 
   pinMode(INT_PIN, INPUT_PULLUP);
-  pinMode(BLINKER, OUTPUT);
+  pinMode(D7, OUTPUT);
   pinMode(BUTTONRED, OUTPUT);
   pinMode(BUTTONGREEN, OUTPUT);
   pinMode(BUTTONBLUE, OUTPUT);
@@ -89,7 +89,7 @@ void setup() {
   }
   else {
     Serial.println("Device initialized!");
-    Particle.publish("DEBUG","failed to initialize device! Please check your wiring.");
+    Particle.publish("DEBUG","Device initialized!");
   }
 
   // ApDS 9960 Modes Pick 1
@@ -123,6 +123,10 @@ void setup() {
 void loop() {
   
   start = System.ticks();
+  if( digitalRead(BUTTON1) == HIGH ) { 
+    digitalWrite(D7, HIGH );
+    } else  digitalWrite(D7, LOW ); 
+  
 
   if (myConfig.gestureArmed == true ) {
   doGesture();
@@ -131,8 +135,10 @@ void loop() {
   button1.Update();
   // Save click codes in LEDfunction, as click codes are reset at next Update()
   if(button1.clicks != 0) function = button1.clicks;
+  secSinceMotion = 0;  // need to reset the motions incase the PIR is stuck.
   switch(function){
     case 1:
+      
       buttonTEXT = "SINGLE click";
       Particle.publish("buttonTEXT", "SINGLE click");
       if (dragoState == "00") {
@@ -155,7 +161,8 @@ void loop() {
     case 2:
       buttonTEXT = "DOUBLE click";
       Particle.publish("buttonTEXT", "DOUBLE click");
-      Particle.publish("drago", "11",PRIVATE);
+      //Particle.publish("drago", "11",PRIVATE);
+      juiceLeds(0,0,0,32);
       break;
     case 3:
       buttonTEXT = "TRIPLE click";
@@ -219,7 +226,7 @@ void loop() {
   secSinceMotion = ( millis() - lastMotionTime )/1000;
   oldMotionState = motionState;
  
-  ticksperloop = System.ticks() - start;
+  ticksperloop = (System.ticks() - start);
 
 }
 
@@ -257,7 +264,7 @@ void loop() {
       if ( command.toInt() == 0 ) {
         strip2.clear();
       }
-  return 1;    
+    return 1;    
   }
   int  getColor(String command) {
       int myreturn = 0;
@@ -452,6 +459,7 @@ void loop() {
     return 0;
   }
   void juiceLeds(int ured, int ugreen,int ublue, int uwhite) {
+        
         #define mydelay2 20
         for (int n=0; n < 60; n++) {
         strip2.setPixelColor(n,ugreen,ured,ublue,uwhite );  // not sure why red and green is swapped
