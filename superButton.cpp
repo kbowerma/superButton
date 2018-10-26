@@ -69,7 +69,7 @@ void setup() {
   Particle.variable("lastMotion", secSinceMotion);
   Particle.variable("motionArmed", myConfig.motionArmed);
   //Particle.variable("ticksperloop", ticksperloop);
-  Particle.function("rainbow",toogleRainbow);
+
   Particle.function("getcolor",getColor);
   Particle.function("setMode",setMode);
   Particle.function("setConfig", setConfig);
@@ -233,17 +233,7 @@ void loop() {
 }
 
 //----Functions ---------------
-  void rainbow(uint8_t wait) {
-    uint16_t i, j;
 
-    for(j=0; j<256; j++) {
-      for(i=0; i<strip.numPixels(); i++) {
-        strip.setPixelColor(i, Wheel((i+j) & 255));
-      }
-      strip.show();
-      delay(wait);
-    }
-  }
   uint32_t Wheel(byte WheelPos) {
     if(WheelPos < 85) {
     return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
@@ -255,19 +245,7 @@ void loop() {
     return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
     }
   }
-  int  toogleRainbow(String command) {
-      // dorainbow = command.toInt();
-      // if (dorainbow == 0 ) {
-      //     strip.setPixelColor(0, 0,0,0,0 );
-      //     strip.setPixelColor(1, 0,0,0,0 );
-      //     return 0;
-      // }
-      if ( command.toInt() == 1 ) rainbow(10);
-      if ( command.toInt() == 0 ) {
-        strip2.clear();
-      }
-    return 1;    
-  }
+
   int  getColor(String command) {
       int myreturn = 0;
       apds.enableProximity(false);
