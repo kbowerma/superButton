@@ -1,6 +1,6 @@
 #define FILENAME "superButton"
-#define MYVERSION "1.0.0"
-#define BUILD_DATE "10/18/2018"
+#define MYVERSION "1.0.1"
+#define BUILD_DATE "10/25/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4
 #define BUTTONGREEN A5
@@ -15,14 +15,11 @@
 #define PIXEL_TYPE SK6812RGBW
 
 // Prototypes for local build, ok to leave in for Build IDE
-void rainbow(uint8_t wait);
   void assignColors();
   int getColor(String command);
   int setMode(String command);
-  int toogleRainbow(String command);
   int setConfig(String command);
   void doGesture();
-  uint32_t Wheel(byte WheelPos);
   void lightsOut();
   void setColor();
   void checkMode(int mode);
@@ -30,7 +27,6 @@ void rainbow(uint8_t wait);
   void dragoHandler(const char *event, const char *data);
   void setButtonColor(int red, int green, int blue) ;
   void juiceLeds(int ured, int ugreen,int ublue, int uwhite); 
-
   struct MyConfig {
     bool motionArmed;
     bool gestureArmed;

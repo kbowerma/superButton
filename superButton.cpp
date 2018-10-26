@@ -28,24 +28,20 @@
 
 //Global variables
   uint16_t r, g, b, w = 0;  // variable to store colororData(&r, &g, &b, &w);
-  uint16_t dorainbow = 0;
   uint8_t proximity_data = 0;
   int red, green, blue, white = 0;  // variable to store color
   int mode, distance =  0;
   String buttonTEXT = "Not Set";
   String dragoState = "xx";
-  //boolean enGesture = true;
   int motionState, oldMotionState;
   int lastMotionTime, secSinceMotion = 0;
-  int function = 0;
+  int buttonState = 0;
   uint32_t ticksperloop, start;
 
 
 void setup() {
  
   EEPROM.get(CONFIGADDR,myConfig);  // get config from EEPROM
-
-
 
   Serial.begin(9600);
   strip.begin();
@@ -63,18 +59,13 @@ void setup() {
   Particle.variable("version", MYVERSION);
   Particle.variable("fileName", FILENAME);
   Particle.variable("buildDate", BUILD_DATE);
-  Particle.variable("doRainbow", dorainbow);
-  // Particle.variable("distance", distance);
   Particle.variable("gestureArmed", myConfig.gestureArmed);
   Particle.variable("lastMotion", secSinceMotion);
   Particle.variable("motionArmed", myConfig.motionArmed);
-  //Particle.variable("ticksperloop", ticksperloop);
-
   Particle.function("getcolor",getColor);
   Particle.function("setMode",setMode);
   Particle.function("setConfig", setConfig);
   Particle.subscribe("log.drago.state", dragoHandler, MY_DEVICES);
-
   pinMode(INT_PIN, INPUT_PULLUP);
   pinMode(D7, OUTPUT);
   pinMode(BUTTONRED, OUTPUT);
@@ -122,21 +113,21 @@ void setup() {
 
 void loop() {
   
-  //start = System.ticks();
+ // read Button
   if( digitalRead(BUTTON1) == HIGH ) { 
-    digitalWrite(D7, HIGH );
+    digitalWrite(D7, HIGH );   // set the blue led when I push the button.
     } else  digitalWrite(D7, LOW ); 
   
-
+ // read gesture
   if (myConfig.gestureArmed == true ) {
   doGesture();
-  } else setButtonColor(32,64,0);  // this yellow
+  } // lets not set the button color every loops,  else setButtonColor(32,64,0);  // this yellow
   
   button1.Update();
   // Save click codes in LEDfunction, as click codes are reset at next Update()
-  if(button1.clicks != 0) function = button1.clicks;
+  if(button1.clicks != 0) buttonState = button1.clicks;
   //secSinceMotion = 0;  // need to reset the motions incase the PIR is stuck.
-  switch(function){
+  switch(buttonState){
     case 1:
       
       buttonTEXT = "SINGLE click";
@@ -186,7 +177,7 @@ void loop() {
       break;
   }
 
-  function = 0;  // reset the click type
+  buttonState = 0;  // reset the click type
 
   //distance =  digitalRead(INT_PIN);   // THIS DOENSNT WORK
 
@@ -234,17 +225,6 @@ void loop() {
 
 //----Functions ---------------
 
-  uint32_t Wheel(byte WheelPos) {
-    if(WheelPos < 85) {
-    return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-    } else if(WheelPos < 170) {
-    WheelPos -= 85;
-    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-    } else {
-    WheelPos -= 170;
-    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-    }
-  }
 
   int  getColor(String command) {
       int myreturn = 0;
@@ -336,7 +316,7 @@ void loop() {
         lightsOut();
         mode = c;
         break;
-      case 2:  // rainbow
+      case 2:  // rainbow what?
         apds.enableColor(false);
         apds.enableGesture(false);
         mode = c;
@@ -368,6 +348,7 @@ void loop() {
 
   }
   void setColor() {
+    // this is the 2 rgb leds used for notifications
     strip.setPixelColor(0, red,green,blue,white );
     strip.setPixelColor(1, red,green,blue,white );
     strip.show();
@@ -375,7 +356,6 @@ void loop() {
   void checkMode(int mode){
     if (mode == 0 && millis() % 500 == 0 ) assignColors();
     if( mode == 1 ) doGesture();
-    if( mode == 2 ) rainbow(20);
     if( mode == 3 ) setColor();
     if( mode == 4 ) lightsOut();
     //if( mode > 4 ) mode = 0;  //TODO should this be here or on the button,
