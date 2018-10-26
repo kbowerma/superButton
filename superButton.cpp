@@ -68,7 +68,7 @@ void setup() {
   Particle.variable("gestureArmed", myConfig.gestureArmed);
   Particle.variable("lastMotion", secSinceMotion);
   Particle.variable("motionArmed", myConfig.motionArmed);
-  Particle.variable("ticksperloop", ticksperloop);
+  //Particle.variable("ticksperloop", ticksperloop);
   Particle.function("rainbow",toogleRainbow);
   Particle.function("getcolor",getColor);
   Particle.function("setMode",setMode);
@@ -122,7 +122,7 @@ void setup() {
 
 void loop() {
   
-  start = System.ticks();
+  //start = System.ticks();
   if( digitalRead(BUTTON1) == HIGH ) { 
     digitalWrite(D7, HIGH );
     } else  digitalWrite(D7, LOW ); 
@@ -135,7 +135,7 @@ void loop() {
   button1.Update();
   // Save click codes in LEDfunction, as click codes are reset at next Update()
   if(button1.clicks != 0) function = button1.clicks;
-  secSinceMotion = 0;  // need to reset the motions incase the PIR is stuck.
+  //secSinceMotion = 0;  // need to reset the motions incase the PIR is stuck.
   switch(function){
     case 1:
       
@@ -208,8 +208,10 @@ void loop() {
     strip.show();
   }
 
-  //check for away
-  if ( dragoState != "00" && secSinceMotion > myConfig.awayHoldTMR && myConfig.motionArmed == true )  {
+  //check for away 
+   if ( dragoState != "00" && secSinceMotion > myConfig.awayHoldTMR && myConfig.motionArmed == true )  { 
+ // if ( dragoState != "00" && secSinceMotion > 15 && myConfig.motionArmed == true )  {
+  //  if ( dragoState != "00" && secSinceMotion > 15  )  {   // I am debugging here dont know why I am not turing the lights off when the timer expires
           Particle.publish("drago", "00",PRIVATE);
           setButtonColor(255,0,255);  // I wanna turn it yellow.
           juiceLeds(0,0,0,0);
@@ -226,7 +228,7 @@ void loop() {
   secSinceMotion = ( millis() - lastMotionTime )/1000;
   oldMotionState = motionState;
  
-  ticksperloop = (System.ticks() - start);
+  //ticksperloop = (System.ticks() - start);
 
 }
 
