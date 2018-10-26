@@ -1,5 +1,5 @@
 #define FILENAME "superButton"
-#define MYVERSION "1.0.1"
+#define MYVERSION "1.0.2"
 #define BUILD_DATE "10/25/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4
@@ -27,6 +27,7 @@
   void dragoHandler(const char *event, const char *data);
   void setButtonColor(int red, int green, int blue) ;
   void juiceLeds(int ured, int ugreen,int ublue, int uwhite); 
+  void buttonHandler();
   struct MyConfig {
     bool motionArmed;
     bool gestureArmed;

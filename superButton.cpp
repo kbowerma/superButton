@@ -6,6 +6,8 @@
  Reference
   Button post:  https://community.particle.io/t/photon-wkp-pin-button-library/37166  
   Sparkfun lib (not used) https://github.com/sparkfun/APDS-9960_RGB_and_Gesture_Sensor/
+ * 10/25/18:  1.0.2  moved button handler to a function
+
  */ 
 
 // Includes
@@ -122,7 +124,8 @@ void loop() {
   if (myConfig.gestureArmed == true ) {
   doGesture();
   } // lets not set the button color every loops,  else setButtonColor(32,64,0);  // this yellow
-  
+
+ /* 
   button1.Update();
   // Save click codes in LEDfunction, as click codes are reset at next Update()
   if(button1.clicks != 0) buttonState = button1.clicks;
@@ -179,6 +182,10 @@ void loop() {
 
   buttonState = 0;  // reset the click type
 
+  */
+
+  buttonHandler();  // function to read button and do action 
+
   //distance =  digitalRead(INT_PIN);   // THIS DOENSNT WORK
 
   //PIR sensor
@@ -219,7 +226,7 @@ void loop() {
   secSinceMotion = ( millis() - lastMotionTime )/1000;
   oldMotionState = motionState;
  
-  //ticksperloop = (System.ticks() - start);
+  
 
 }
 
@@ -427,5 +434,61 @@ void loop() {
         strip2.show();
         }
 
+  }
+  void buttonHandler() {
+     button1.Update();
+   // Save click codes in LEDfunction, as click codes are reset at next Update()
+   if(button1.clicks != 0) buttonState = button1.clicks;
+   //secSinceMotion = 0;  // need to reset the motions incase the PIR is stuck.
+   switch(buttonState){
+    case 1:
+      
+      buttonTEXT = "SINGLE click";
+      Particle.publish("buttonTEXT", "SINGLE click");
+      if (dragoState == "00") {
+        secSinceMotion = 0;  // just in case
+        Particle.publish("drago", "10",PRIVATE);
+        setButtonColor(9,0,0);
+      } else if (dragoState == "10") {
+        secSinceMotion = 0;  // just in case
+        Particle.publish("drago", "11",PRIVATE);
+        setButtonColor(0,9,0);
+      } else if (dragoState == "11") {
+        secSinceMotion = 0;  // just in case
+        Particle.publish("drago", "01",PRIVATE);
+        setButtonColor(0,0,9);
+      } else {
+        Particle.publish("drago", "00",PRIVATE);
+        setButtonColor(0,9,9);
+      }
+      break;
+    case 2:
+      buttonTEXT = "DOUBLE click";
+      Particle.publish("buttonTEXT", "DOUBLE click");
+      //Particle.publish("drago", "11",PRIVATE);
+      juiceLeds(0,0,0,32);
+      break;
+    case 3:
+      buttonTEXT = "TRIPLE click";
+      Particle.publish("buttonTEXT", "TRIPLE click");
+      Particle.publish("drago", "01",PRIVATE);
+      break;
+    case -1:
+      buttonTEXT = "SINGLE LONG click";
+      Particle.publish("buttonTEXT", "SINGLE LONG click");
+      Particle.publish("drago", "00",PRIVATE);
+      //setButtonColor(255,255,0);  // try yellow -- does red
+      setButtonColor(64,128,0);  // haha yellow works.  green has to be 2x red
+      break;
+    case -2:
+      buttonTEXT = "DOUBLE LONG click";
+      Particle.publish("buttonTEXT", "DOUBLE LONG click");
+      break;
+    case -3:
+      buttonTEXT = "TRIPLE LONG click";
+      Particle.publish("buttonTEXT", "TRIPLE LONG click");
+      break;
+   }
+   buttonState = 0;  // reset the click type
   }
 
