@@ -1,5 +1,5 @@
 #define FILENAME "superButton"
-#define MYVERSION "0.5.4_resetssecsincemotion"
+#define MYVERSION "1.0.0"
 #define BUILD_DATE "10/18/2018"
 #define BUTTON1 D6
 #define BUTTONRED A4
