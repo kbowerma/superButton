@@ -7,6 +7,7 @@
   Button post:  https://community.particle.io/t/photon-wkp-pin-button-library/37166  
   Sparkfun lib (not used) https://github.com/sparkfun/APDS-9960_RGB_and_Gesture_Sensor/
  * 10/25/18:  1.0.2  moved button handler to a function
+ * 11/28/18:   Just got Mesh, going to flash this on the old firmare  release/v0.5.2   - then going to move to a new directory and try it again.
 
  */ 
 
@@ -39,6 +40,8 @@
   int lastMotionTime, secSinceMotion = 0;
   int buttonState = 0;
   uint32_t ticksperloop, start;
+  unsigned long thistime, lasttime = 0;
+  double myperiod = 0;
 
 
 void setup() {
@@ -64,9 +67,11 @@ void setup() {
   Particle.variable("gestureArmed", myConfig.gestureArmed);
   Particle.variable("lastMotion", secSinceMotion);
   Particle.variable("motionArmed", myConfig.motionArmed);
+    Particle.variable("period", myperiod);
   Particle.function("getcolor",getColor);
   Particle.function("setMode",setMode);
   Particle.function("setConfig", setConfig);
+  Particle.function("freq", freqChecker);
   Particle.subscribe("log.drago.state", dragoHandler, MY_DEVICES);
   pinMode(INT_PIN, INPUT_PULLUP);
   pinMode(D7, OUTPUT);
@@ -123,66 +128,9 @@ void loop() {
  // read gesture
   if (myConfig.gestureArmed == true ) {
   doGesture();
-  } // lets not set the button color every loops,  else setButtonColor(32,64,0);  // this yellow
+  }  else setButtonColor(32,64,0);  // this yellow
 
- /* 
-  button1.Update();
-  // Save click codes in LEDfunction, as click codes are reset at next Update()
-  if(button1.clicks != 0) buttonState = button1.clicks;
-  //secSinceMotion = 0;  // need to reset the motions incase the PIR is stuck.
-  switch(buttonState){
-    case 1:
-      
-      buttonTEXT = "SINGLE click";
-      Particle.publish("buttonTEXT", "SINGLE click");
-      if (dragoState == "00") {
-        secSinceMotion = 0;  // just in case
-        Particle.publish("drago", "10",PRIVATE);
-        setButtonColor(9,0,0);
-      } else if (dragoState == "10") {
-        secSinceMotion = 0;  // just in case
-        Particle.publish("drago", "11",PRIVATE);
-        setButtonColor(0,9,0);
-      } else if (dragoState == "11") {
-        secSinceMotion = 0;  // just in case
-        Particle.publish("drago", "01",PRIVATE);
-        setButtonColor(0,0,9);
-      } else {
-        Particle.publish("drago", "00",PRIVATE);
-        setButtonColor(0,9,9);
-      }
-      break;
-    case 2:
-      buttonTEXT = "DOUBLE click";
-      Particle.publish("buttonTEXT", "DOUBLE click");
-      //Particle.publish("drago", "11",PRIVATE);
-      juiceLeds(0,0,0,32);
-      break;
-    case 3:
-      buttonTEXT = "TRIPLE click";
-      Particle.publish("buttonTEXT", "TRIPLE click");
-      Particle.publish("drago", "01",PRIVATE);
-      break;
-    case -1:
-      buttonTEXT = "SINGLE LONG click";
-      Particle.publish("buttonTEXT", "SINGLE LONG click");
-      Particle.publish("drago", "00",PRIVATE);
-      //setButtonColor(255,255,0);  // try yellow -- does red
-      setButtonColor(64,128,0);  // haha yellow works.  green has to be 2x red
-      break;
-    case -2:
-      buttonTEXT = "DOUBLE LONG click";
-      Particle.publish("buttonTEXT", "DOUBLE LONG click");
-      break;
-    case -3:
-      buttonTEXT = "TRIPLE LONG click";
-      Particle.publish("buttonTEXT", "TRIPLE LONG click");
-      break;
-  }
-
-  buttonState = 0;  // reset the click type
-
-  */
+ 
 
   buttonHandler();  // function to read button and do action 
 
@@ -225,6 +173,12 @@ void loop() {
 
   secSinceMotion = ( millis() - lastMotionTime )/1000;
   oldMotionState = motionState;
+
+    // always last
+   myperiod = (thistime - lasttime);
+  lasttime = thistime;  // for frequency checker
+  //delay(12);
+  thistime = millis();
  
   
 
@@ -367,18 +321,7 @@ void loop() {
     if( mode == 4 ) lightsOut();
     //if( mode > 4 ) mode = 0;  //TODO should this be here or on the button,
   }
-  void checkButton(){
-    if( digitalRead(D6)==LOW ) { // button pushed turn on blue led
-      digitalWrite(D7, HIGH);
-      mode++;
-      if( mode > 4 ) mode = 0;
-        Particle.publish("setMode",String(mode));
-      delay(250);
-    } else  {
-    digitalWrite(D7, LOW);  // turn off blue led
-    }
 
-  }
   void dragoHandler(const char *event, const char *data) {
     dragoState = data;
 
@@ -491,4 +434,9 @@ void loop() {
    }
    buttonState = 0;  // reset the click type
   }
+  double freqChecker(String command) {
+    //double myperiod = (thistime - lasttime);
+    double myfrequency = ( 1 / myperiod ) * 1000;
+    return myfrequency;
+}
 

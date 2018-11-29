@@ -28,6 +28,7 @@
   void setButtonColor(int red, int green, int blue) ;
   void juiceLeds(int ured, int ugreen,int ublue, int uwhite); 
   void buttonHandler();
+   double freqChecker(String command);
   struct MyConfig {
     bool motionArmed;
     bool gestureArmed;
