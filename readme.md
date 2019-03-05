@@ -57,3 +57,8 @@ pin | brd |P0 |pos1 | pos2
 4 | SCL | D1 | G11 | G28
 5 | SDA | D0 | G12 | G29
 6 | Int | D5 | G7 | G30
+
+
+### 3/4/2018 update 
+
+The code base and firmware for photons vs xenon/boron/argon needs to be seperated,  ```~/Documents/particle/photon_firmware``` will continue to be photon stuff but ```~/Documents/particle/particle_dev```  will be the new mesh stuff
