@@ -1,5 +1,5 @@
 #define FILENAME "superButton"
-#define MYVERSION "1.0.3"
+#define MYVERSION "1.0.4_6buttonorgesture"
 #define BUILD_DATE "3/4/2019"
 #define BUTTON1 D6
 #define BUTTONRED A4
@@ -7,7 +7,7 @@
 #define BUTTONBLUE A7
 #define PIR A0
 #define BLINKER D7
-#define INT_PIN D5
+#define INT_PIN D5  // APDS
 #define NEOSTRIP D4
 #define CONFIGADDR 10
 #define PIXEL_PIN D2 // IMPORTANT: Set pixel COUNT, PIN and TYPE for Neopixel

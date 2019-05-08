@@ -8,7 +8,8 @@
   Sparkfun lib (not used) https://github.com/sparkfun/APDS-9960_RGB_and_Gesture_Sensor/
  * 10/25/18:  1.0.2  moved button handler to a function
  * 11/28/18:   Just got Mesh, going to flash this on the old firmare  release/v0.5.2   - then going to move to a new directory and try it again.
-
+ * 3/4/2019:  trying to figure out #6 button or gesture this looks promising:
+ *   https://community.particle.io/t/apds-9960-and-photon/42722/16
  */ 
 
 // Includes
@@ -42,6 +43,8 @@
   uint32_t ticksperloop, start;
   unsigned long thistime, lasttime = 0;
   double myperiod = 0;
+  double debugcounter1 = 0;
+  int isr_flag = 0;
 
 
 void setup() {
@@ -67,7 +70,8 @@ void setup() {
   Particle.variable("gestureArmed", myConfig.gestureArmed);
   Particle.variable("lastMotion", secSinceMotion);
   Particle.variable("motionArmed", myConfig.motionArmed);
-    Particle.variable("period", myperiod);
+  Particle.variable("period", myperiod);
+  Particle.variable("counter1", debugcounter1);
   Particle.function("getcolor",getColor);
   Particle.function("setMode",setMode);
   Particle.function("setConfig", setConfig);
@@ -234,6 +238,7 @@ void loop() {
 
   }
   void doGesture() {
+    debugcounter1++;
       switch (apds.readGesture() ) {
         case APDS9960_DOWN:
           Serial.println("v");
@@ -314,7 +319,7 @@ void loop() {
     strip.setPixelColor(1, red,green,blue,white );
     strip.show();
   }
-  void checkMode(int mode){
+  void checkMode(int mode){  // never gets called
     if (mode == 0 && millis() % 500 == 0 ) assignColors();
     if( mode == 1 ) doGesture();
     if( mode == 3 ) setColor();
@@ -379,6 +384,7 @@ void loop() {
 
   }
   void buttonHandler() {
+     
      button1.Update();
    // Save click codes in LEDfunction, as click codes are reset at next Update()
    if(button1.clicks != 0) buttonState = button1.clicks;

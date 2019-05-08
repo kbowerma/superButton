@@ -22,7 +22,7 @@ GND|  | RST |
 Tx|  | VBAT |
 Rx|  | GND |
 WKP| btn blue | D7 |
-DAC|  | D6 | SW2
+DAC|  | D6 | Button1
 A5| btn green  | D5 | APDS9960 INT
 A4| btn red  | D4 | underpin strip
 A3|   | D3 |
@@ -62,3 +62,5 @@ pin | brd |P0 |pos1 | pos2
 ### 3/4/2018 update 
 
 The code base and firmware for photons vs xenon/boron/argon needs to be seperated,  ```~/Documents/particle/photon_firmware``` will continue to be photon stuff but ```~/Documents/particle/particle_dev```  will be the new mesh stuff
+
+[read the docs](https://media.readthedocs.org/pdf/adafruit-circuitpython-apds9960/latest/adafruit-circuitpython-apds9960.pdf)
